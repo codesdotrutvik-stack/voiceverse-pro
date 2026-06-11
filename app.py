@@ -1,7 +1,5 @@
 import streamlit as st
 import requests
-import pyttsx3
-import threading
 
 api_key = "tXPmUYPeEqwD48MrvREFmn3GmvB7KqRk"
 url = "https://api.mistral.ai/v1/chat/completions"
@@ -13,15 +11,6 @@ headers = {
 
 st.set_page_config(page_title="AI Study Buddy", page_icon="📚", layout="wide")
 
-def speak_text(text):
-    def _speak():
-        engine = pyttsx3.init()
-        engine.say(text)
-        engine.runAndWait()
-    thread = threading.Thread(target=_speak)
-    thread.start()
-
-# Custom CSS - Solid Colors (No Gradient)
 st.markdown("""
 <style>
     .stApp {
@@ -70,16 +59,9 @@ st.markdown("""
         border-left: 4px solid #10b981;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    .sidebar-box {
-        background-color: white;
-        padding: 1rem;
-        border-radius: 12px;
-        margin-bottom: 1rem;
-    }
 </style>
 """, unsafe_allow_html=True)
 
-# Header
 st.markdown("""
 <div class="main-header">
     <h1>📚 AI Study Buddy</h1>
@@ -90,14 +72,9 @@ st.markdown("""
 if "chat" not in st.session_state:
     st.session_state.chat = []
 
-# Sidebar
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
     mode = st.selectbox("Select Mode", ["Simple (Like I'm 5)", "Normal", "Detailed"])
-    
-    st.markdown("---")
-    voice = st.checkbox("🔊 Voice Output")
-    
     st.markdown("---")
     st.markdown("### 📚 Quick Topics")
     
@@ -114,15 +91,10 @@ with st.sidebar:
         st.session_state.chat = []
         st.rerun()
 
-# Main area
 st.markdown("### 💬 Ask your question")
 user_input = st.text_area("", height=100, placeholder="Example: What is Python? Explain loops...")
 
-col1, col2 = st.columns([1, 4])
-with col1:
-    ask_clicked = st.button("🚀 Ask AI", use_container_width=True)
-
-if ask_clicked and user_input:
+if st.button("🚀 Ask AI", use_container_width=True) and user_input:
     with st.spinner("🧠 AI is thinking..."):
         if mode == "Simple (Like I'm 5)":
             prompt = "Explain like the student is 5 years old. Very simple words. Short sentences."
@@ -141,11 +113,11 @@ if ask_clicked and user_input:
         response = requests.post(url, json=data, headers=headers)
         answer = response.json()["choices"][0]["message"]["content"]
         st.session_state.chat.append({"q": user_input, "a": answer})
-        if voice:
-            speak_text(answer)
+        
+        # Browser speech
+        st.markdown(f'<audio src="https://api.voicerss.org/?key=&hl=en-us&src={answer}" autoplay></audio>', unsafe_allow_html=True)
         st.rerun()
 
-# Chat history
 st.markdown("---")
 st.markdown("### 💬 Conversation")
 
@@ -154,7 +126,6 @@ for item in reversed(st.session_state.chat):
     st.markdown(f'<div class="ai-msg"><strong>🤖 AI Teacher:</strong><br>{item["a"]}</div>', unsafe_allow_html=True)
     st.markdown("---")
 
-# Footer
 st.markdown("""
 <div style="text-align: center; color: #6b7280; margin-top: 2rem; padding: 1rem;">
     Made with ❤️ using Mistral AI | AI Study Buddy

@@ -60,6 +60,21 @@ st.markdown("""
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 </style>
+
+<script>
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            var utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.log("Speech synthesis not supported");
+        }
+    }
+</script>
 """, unsafe_allow_html=True)
 
 st.markdown("""
@@ -75,6 +90,10 @@ if "chat" not in st.session_state:
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
     mode = st.selectbox("Select Mode", ["Simple (Like I'm 5)", "Normal", "Detailed"])
+    
+    st.markdown("---")
+    voice_enabled = st.checkbox("🔊 Voice Output", value=False)
+    
     st.markdown("---")
     st.markdown("### 📚 Quick Topics")
     
@@ -114,8 +133,10 @@ if st.button("🚀 Ask AI", use_container_width=True) and user_input:
         answer = response.json()["choices"][0]["message"]["content"]
         st.session_state.chat.append({"q": user_input, "a": answer})
         
-        # Browser speech
-        st.markdown(f'<audio src="https://api.voicerss.org/?key=&hl=en-us&src={answer}" autoplay></audio>', unsafe_allow_html=True)
+        if voice_enabled:
+            # JavaScript for voice
+            st.markdown(f'<script>speakText({repr(answer)})</script>', unsafe_allow_html=True)
+        
         st.rerun()
 
 st.markdown("---")

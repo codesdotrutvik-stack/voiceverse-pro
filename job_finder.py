@@ -74,8 +74,8 @@ st.markdown("""
         font-weight: 500;
     }
     
-    /* Floating Chat Button - Bottom Right Circle */
-    .floating-chat-btn {
+    /* Floating Chat Button */
+    .chat-float-btn {
         position: fixed;
         bottom: 25px;
         right: 25px;
@@ -90,34 +90,45 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0,0,0,0.25);
         z-index: 999;
         transition: all 0.3s;
-        border: none;
         font-size: 28px;
+        border: none;
     }
-    .floating-chat-btn:hover {
+    .chat-float-btn:hover {
         transform: scale(1.08);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     }
     
-    /* Chat Popup Window */
-    .chat-popup {
+    /* Chat Popup */
+    .chat-popup-overlay {
         position: fixed;
-        bottom: 100px;
-        right: 25px;
-        width: 380px;
-        height: 500px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .chat-popup-window {
+        width: 400px;
+        height: 550px;
         background: white;
-        border-radius: 16px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-        z-index: 998;
+        border-radius: 20px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        border: 1px solid #e2e8f0;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+        from { transform: translateY(50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
     }
     .chat-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 14px 16px;
+        padding: 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -125,15 +136,15 @@ st.markdown("""
     .chat-close {
         cursor: pointer;
         background: rgba(255,255,255,0.2);
-        width: 28px;
-        height: 28px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 18px;
     }
-    .chat-messages-area {
+    .chat-messages {
         flex: 1;
         padding: 16px;
         overflow-y: auto;
@@ -142,21 +153,21 @@ st.markdown("""
         flex-direction: column;
         gap: 12px;
     }
-    .bot-message {
+    .msg-bot {
         display: flex;
-        gap: 8px;
+        gap: 10px;
     }
-    .bot-avatar {
-        width: 32px;
-        height: 32px;
+    .bot-icon {
+        width: 35px;
+        height: 35px;
         background: linear-gradient(135deg, #00d4ff, #7b5ea7);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
+        font-size: 18px;
     }
-    .bot-bubble {
+    .bot-text {
         background: white;
         padding: 10px 14px;
         border-radius: 18px;
@@ -164,22 +175,22 @@ st.markdown("""
         font-size: 13px;
         color: #1e293b;
         border: 1px solid #e2e8f0;
-        max-width: 85%;
+        max-width: 80%;
     }
-    .user-message {
+    .msg-user {
         display: flex;
         justify-content: flex-end;
     }
-    .user-bubble {
+    .user-text {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         padding: 10px 14px;
         border-radius: 18px;
         border-top-right-radius: 4px;
         font-size: 13px;
-        max-width: 85%;
+        max-width: 80%;
     }
-    .message-time {
+    .msg-time {
         font-size: 9px;
         color: #94a3b8;
         margin-top: 4px;
@@ -235,9 +246,6 @@ POPULAR_ROLES = [
 DEFAULT_ROLE = "Python Developer"
 DEFAULT_CITY = "Surat"
 
-# ============================================================
-# PERMANENT STORAGE
-# ============================================================
 SAVED_JOBS_FILE = "saved_jobs.json"
 
 def load_saved_jobs():
@@ -294,7 +302,7 @@ def fetch_jobs(role, location):
                     "company": company_name,
                     "location": result.get("location", {}).get("display_name", location_name) if isinstance(result.get("location"), dict) else location_name,
                     "salary": salary,
-                    "description": result.get("description", "")[:400] if result.get("description") else "No description available",
+                    "description": result.get("description", "")[:400] if result.get("description") else "No description",
                     "url": result.get("redirect_url", "#"),
                     "created": result.get("created", "Recently")
                 })
@@ -311,41 +319,13 @@ def get_company_details(company_name, job_title):
         "Content-Type": "application/json"
     }
     
-    prompt = f"""Provide brief information about this company and job.
+    prompt = f"""Provide brief info about {company_name} for {job_title}.
 
-Company: {company_name}
-Job Title: {job_title}
-
-Return in this format:
+Return format:
 - Industry:
 - Required Experience:
 - Key Skills:
 - Interview Tips:"""
-
-    data = {
-        "model": "mistral-small-latest",
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 250
-    }
-    
-    try:
-        response = requests.post(url, json=data, headers=headers, timeout=15)
-        return response.json()["choices"][0]["message"]["content"]
-    except:
-        return f"- Industry: Technology\n- Company: {company_name}\n- Tip: Research the company before interview"
-
-def chat_with_ai(user_message):
-    url = "https://api.mistral.ai/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {MISTRAL_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    
-    prompt = f"""You are JobBot, a helpful career assistant. Answer briefly.
-
-User: {user_message}
-
-Give friendly, helpful response in 2-3 sentences about jobs or career."""
 
     data = {
         "model": "mistral-small-latest",
@@ -357,7 +337,32 @@ Give friendly, helpful response in 2-3 sentences about jobs or career."""
         response = requests.post(url, json=data, headers=headers, timeout=15)
         return response.json()["choices"][0]["message"]["content"]
     except:
-        return "Hi! How can I help with your job search today?"
+        return f"- Industry: Technology\n- Company: {company_name}"
+
+def chat_with_ai(user_message):
+    url = "https://api.mistral.ai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {MISTRAL_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    prompt = f"""You are JobBot, a career assistant. Answer briefly and helpfully.
+
+User: {user_message}
+
+Give friendly response in 2-3 sentences about jobs or career."""
+
+    data = {
+        "model": "mistral-small-latest",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 150
+    }
+    
+    try:
+        response = requests.post(url, json=data, headers=headers, timeout=15)
+        return response.json()["choices"][0]["message"]["content"]
+    except:
+        return "Thanks for your message! How can I help with your job search?"
 
 # ============================================================
 # SESSION STATE
@@ -374,10 +379,10 @@ if "search_role" not in st.session_state:
     st.session_state.search_role = DEFAULT_ROLE
 if "search_city" not in st.session_state:
     st.session_state.search_city = DEFAULT_CITY
-if "chat_open" not in st.session_state:
-    st.session_state.chat_open = False
-if "chat_messages" not in st.session_state:
-    st.session_state.chat_messages = []
+if "show_chat" not in st.session_state:
+    st.session_state.show_chat = False
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
 # ============================================================
 # SIDEBAR
@@ -545,81 +550,77 @@ if st.session_state.saved_jobs:
                     st.rerun()
 
 # ============================================================
-# SINGLE CHATBOT - FLOATING CIRCLE BUTTON (BOTTOM RIGHT)
+# CHATBOT - SIMPLE WORKING
 # ============================================================
 
-# Floating Circle Button
+# Floating Button
 st.markdown("""
-<div class="floating-chat-btn" id="floatingChatBtn">
+<div class="chat-float-btn" id="chatOpenBtn">
     💬
 </div>
 
 <script>
-    document.getElementById('floatingChatBtn').addEventListener('click', function() {
-        // Find and click the hidden Streamlit button
-        const btn = document.querySelector('button[key="hidden_chat_trigger"]');
-        if (btn) {
-            btn.click();
-        }
+    document.getElementById('chatOpenBtn').addEventListener('click', function() {
+        const btn = document.querySelector('button[key="open_chat_modal"]');
+        if (btn) btn.click();
     });
 </script>
 """, unsafe_allow_html=True)
 
-# Hidden Streamlit button (triggered by circle click)
-if st.button("", key="hidden_chat_trigger", help="Open Chat"):
-    st.session_state.chat_open = not st.session_state.chat_open
-    if st.session_state.chat_open and not st.session_state.chat_messages:
-        st.session_state.chat_messages = [
+# Hidden button to open chat
+if st.button("", key="open_chat_modal"):
+    st.session_state.show_chat = True
+    if not st.session_state.chat_history:
+        st.session_state.chat_history = [
             {"role": "bot", "content": "👋 Hi! I'm JobBot. Ask me about jobs, companies, or career advice!", "time": datetime.now().strftime("%I:%M %p")}
         ]
     st.rerun()
 
-# Chat Popup (only visible when chat_open is True)
-if st.session_state.chat_open:
+# Chat Popup Modal
+if st.session_state.show_chat:
     st.markdown("""
-    <div class="chat-popup">
-        <div class="chat-header">
-            <span>🤖 JobBot Assistant</span>
-            <div class="chat-close" id="closeChatBtn">✕</div>
-        </div>
-        <div class="chat-messages-area" id="chatMessagesArea">
+    <div class="chat-popup-overlay" id="chatOverlay">
+        <div class="chat-popup-window">
+            <div class="chat-header">
+                <span>🤖 JobBot Assistant</span>
+                <div class="chat-close" id="closeChatWindow">✕</div>
+            </div>
+            <div class="chat-messages" id="chatMessagesList">
     """, unsafe_allow_html=True)
     
-    # Display messages
-    for msg in st.session_state.chat_messages:
+    for msg in st.session_state.chat_history:
         if msg["role"] == "user":
             st.markdown(f"""
-            <div class="user-message">
-                <div class="user-bubble">{msg['content']}</div>
+            <div class="msg-user">
+                <div class="user-text">{msg['content']}</div>
             </div>
-            <div class="message-time" style="text-align: right;">{msg.get('time', '')}</div>
+            <div class="msg-time" style="text-align: right;">{msg.get('time', '')}</div>
             """, unsafe_allow_html=True)
         else:
             st.markdown(f"""
-            <div class="bot-message">
-                <div class="bot-avatar">🤖</div>
-                <div class="bot-bubble">{msg['content']}</div>
+            <div class="msg-bot">
+                <div class="bot-icon">🤖</div>
+                <div class="bot-text">{msg['content']}</div>
             </div>
-            <div class="message-time" style="margin-left: 40px;">{msg.get('time', '')}</div>
+            <div class="msg-time" style="margin-left: 45px;">{msg.get('time', '')}</div>
             """, unsafe_allow_html=True)
     
     st.markdown("""
-        </div>
-        <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Type a message..." />
-            <button id="sendChatBtn">Send</button>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatMessageInput" placeholder="Type a message..." />
+                <button id="sendChatMessageBtn">Send</button>
+            </div>
         </div>
     </div>
     
     <script>
-        // Send message function
         function sendMessage() {
-            const input = document.getElementById('chatInput');
+            const input = document.getElementById('chatMessageInput');
             const message = input.value;
             if (message.trim()) {
-                // Find Streamlit input and button
-                const streamlitInput = document.querySelector('input[data-testid="stTextInput"]');
-                const streamlitBtn = document.querySelector('button[key="send_chat_message"]');
+                const streamlitInput = document.querySelector('input[data-testid="stTextInput"][aria-label="chat_input_hidden"]');
+                const streamlitBtn = document.querySelector('button[key="send_chat_msg"]');
                 if (streamlitInput && streamlitBtn) {
                     streamlitInput.value = message;
                     streamlitBtn.click();
@@ -628,26 +629,26 @@ if st.session_state.chat_open:
             }
         }
         
-        document.getElementById('sendChatBtn').addEventListener('click', sendMessage);
-        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+        document.getElementById('sendChatMessageBtn').addEventListener('click', sendMessage);
+        document.getElementById('chatMessageInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') sendMessage();
         });
-        document.getElementById('closeChatBtn').addEventListener('click', function() {
+        document.getElementById('closeChatWindow').addEventListener('click', function() {
             window.location.reload();
         });
     </script>
     """, unsafe_allow_html=True)
     
-    # Streamlit inputs for chat
-    chat_input = st.text_input("", key="chat_msg_input", label_visibility="collapsed", placeholder="")
+    # Hidden Streamlit inputs
+    chat_input_hidden = st.text_input("", key="chat_input_hidden", label_visibility="collapsed")
     
-    if st.button("", key="send_chat_message"):
-        if chat_input:
+    if st.button("", key="send_chat_msg"):
+        if chat_input_hidden:
             current_time = datetime.now().strftime("%I:%M %p")
-            st.session_state.chat_messages.append({"role": "user", "content": chat_input, "time": current_time})
+            st.session_state.chat_history.append({"role": "user", "content": chat_input_hidden, "time": current_time})
             with st.spinner(""):
-                response = chat_with_ai(chat_input)
-                st.session_state.chat_messages.append({"role": "bot", "content": response, "time": datetime.now().strftime("%I:%M %p")})
+                response = chat_with_ai(chat_input_hidden)
+                st.session_state.chat_history.append({"role": "bot", "content": response, "time": datetime.now().strftime("%I:%M %p")})
             st.rerun()
 
 # ============================================================

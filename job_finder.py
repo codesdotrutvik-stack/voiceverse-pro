@@ -73,127 +73,6 @@ st.markdown("""
         font-size: 0.7rem;
         font-weight: 500;
     }
-    
-    /* Chatbot CSS */
-    .chat-float {
-        position: fixed;
-        bottom: 25px;
-        right: 25px;
-        width: 55px;
-        height: 55px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-        z-index: 999;
-        font-size: 26px;
-        transition: 0.3s;
-    }
-    .chat-float:hover {
-        transform: scale(1.05);
-    }
-    .chat-popup-box {
-        position: fixed;
-        bottom: 90px;
-        right: 25px;
-        width: 340px;
-        height: 450px;
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        border: 1px solid #e2e8f0;
-    }
-    .chat-header {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        padding: 10px 15px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .chat-close-btn {
-        cursor: pointer;
-        font-size: 18px;
-    }
-    .chat-messages-area {
-        flex: 1;
-        padding: 10px;
-        overflow-y: auto;
-        background: #f8fafc;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    .msg-bot {
-        display: flex;
-        gap: 8px;
-    }
-    .msg-bot-icon {
-        width: 28px;
-        height: 28px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-    }
-    .msg-bot-text {
-        background: white;
-        padding: 8px 12px;
-        border-radius: 12px;
-        font-size: 12px;
-        color: #1e293b;
-        border: 1px solid #e2e8f0;
-        max-width: 80%;
-    }
-    .msg-user {
-        display: flex;
-        justify-content: flex-end;
-    }
-    .msg-user-text {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        padding: 8px 12px;
-        border-radius: 12px;
-        font-size: 12px;
-        max-width: 80%;
-    }
-    .msg-time {
-        font-size: 9px;
-        color: #94a3b8;
-        margin-top: 2px;
-    }
-    .chat-input-container {
-        padding: 10px;
-        background: white;
-        border-top: 1px solid #e2e8f0;
-        display: flex;
-        gap: 8px;
-    }
-    .chat-input-container input {
-        flex: 1;
-        padding: 8px 12px;
-        border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        outline: none;
-        font-size: 12px;
-    }
-    .chat-input-container button {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        border-radius: 20px;
-        padding: 0 16px;
-        cursor: pointer;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -212,7 +91,13 @@ ADZUNA_API_KEY = "9c920a8f1b37a639553a98541e0ba2e8"
 MISTRAL_API_KEY = "tXPmUYPeEqwD48MrvREFmn3GmvB7KqRk"
 
 CITIES = ["All", "Ahmedabad", "Surat", "Rajkot", "Vadodara", "Bangalore", "Mumbai", "Hyderabad"]
-POPULAR_ROLES = ["Python Developer", "Shopify Developer", "Frontend Developer", "WordPress Developer", "Full Stack Developer"]
+
+POPULAR_ROLES = [
+    "Python Developer", "Shopify Developer", "Frontend Developer", 
+    "WordPress Developer", "Full Stack Developer", "Data Scientist",
+    "React Developer", "Java Developer", "DevOps Engineer"
+]
+
 DEFAULT_ROLE = "Python Developer"
 DEFAULT_CITY = "Surat"
 
@@ -221,7 +106,7 @@ SAVED_JOBS_FILE = "saved_jobs.json"
 def load_saved_jobs():
     try:
         if os.path.exists(SAVED_JOBS_FILE):
-            with open(SAVED_JOBS_FILE, "r") as f:
+            with open(SAVED_JOBS_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         return []
     except:
@@ -229,14 +114,15 @@ def load_saved_jobs():
 
 def save_saved_jobs(jobs):
     try:
-        with open(SAVED_JOBS_FILE, "w") as f:
-            json.dump(jobs, f, indent=2)
+        with open(SAVED_JOBS_FILE, "w", encoding="utf-8") as f:
+            json.dump(jobs, f, indent=2, ensure_ascii=False)
         return True
     except:
         return False
 
 def fetch_jobs(role, location):
     location_name = location if location != "All" else "India"
+    
     url = "https://api.adzuna.com/v1/api/jobs/in/search/1"
     params = {
         "app_id": ADZUNA_APP_ID,
@@ -283,32 +169,30 @@ def fetch_jobs(role, location):
 
 def get_company_details(company_name, job_title):
     url = "https://api.mistral.ai/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
+    headers = {
+        "Authorization": f"Bearer {MISTRAL_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
     prompt = f"""Provide brief info about {company_name} for {job_title}.
+
 Return format:
 - Industry:
 - Required Experience:
 - Key Skills:
 - Interview Tips:"""
-    data = {"model": "mistral-small-latest", "messages": [{"role": "user", "content": prompt}], "max_tokens": 200}
+
+    data = {
+        "model": "mistral-small-latest",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 200
+    }
     
     try:
         response = requests.post(url, json=data, headers=headers, timeout=15)
         return response.json()["choices"][0]["message"]["content"]
     except:
         return f"- Industry: Technology\n- Company: {company_name}"
-
-def chat_response(msg):
-    url = "https://api.mistral.ai/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
-    prompt = f"You are JobBot. Answer briefly: {msg}"
-    data = {"model": "mistral-small-latest", "messages": [{"role": "user", "content": prompt}], "max_tokens": 150}
-    
-    try:
-        response = requests.post(url, json=data, headers=headers, timeout=15)
-        return response.json()["choices"][0]["message"]["content"]
-    except:
-        return "Thanks for your message! How can I help?"
 
 # ============================================================
 # SESSION STATE
@@ -325,31 +209,43 @@ if "search_role" not in st.session_state:
     st.session_state.search_role = DEFAULT_ROLE
 if "search_city" not in st.session_state:
     st.session_state.search_city = DEFAULT_CITY
-if "show_chat" not in st.session_state:
-    st.session_state.show_chat = False
-if "chat_list" not in st.session_state:
-    st.session_state.chat_list = []
 
 # ============================================================
 # SIDEBAR
 # ============================================================
 with st.sidebar:
     st.markdown("### 🔍 Search Jobs")
-    st.session_state.search_role = st.text_input("Job Role", value=st.session_state.search_role)
-    st.session_state.search_city = st.selectbox("City", CITIES, index=CITIES.index(st.session_state.search_city) if st.session_state.search_city in CITIES else 0)
+    
+    st.session_state.search_role = st.text_input(
+        "Job Role", 
+        value=st.session_state.search_role,
+        placeholder="e.g., Python Developer, Shopify Expert"
+    )
+    
+    st.session_state.search_city = st.selectbox(
+        "City", 
+        CITIES,
+        index=CITIES.index(st.session_state.search_city) if st.session_state.search_city in CITIES else 0
+    )
+    
     search_clicked = st.button("🔍 Search Jobs", use_container_width=True, type="primary")
     
     st.markdown("---")
+    
     st.markdown("### 📌 Quick Filters")
-    for role in POPULAR_ROLES:
+    
+    for role in POPULAR_ROLES[:5]:
         if st.button(role, key=f"quick_{role}", use_container_width=True):
             st.session_state.search_role = role
             st.rerun()
     
     st.markdown("---")
     st.success("✅ API Active")
+    
     st.markdown("---")
-    st.markdown(f"### 📌 Saved Jobs: {len(st.session_state.saved_jobs)}")
+    st.markdown(f"### 📌 Saved Jobs")
+    st.markdown(f"**{len(st.session_state.saved_jobs)}** jobs saved")
+    
     if st.button("🗑️ Clear All Saved", use_container_width=True):
         st.session_state.saved_jobs = []
         save_saved_jobs([])
@@ -359,18 +255,18 @@ with st.sidebar:
 # LOAD DEFAULT JOBS
 # ============================================================
 if not st.session_state.searched and not st.session_state.jobs:
-    with st.spinner("Loading jobs..."):
-        jobs, _ = fetch_jobs(DEFAULT_ROLE, DEFAULT_CITY)
-        if jobs:
-            st.session_state.jobs = jobs
+    with st.spinner(f"Loading jobs..."):
+        default_jobs, error = fetch_jobs(DEFAULT_ROLE, DEFAULT_CITY)
+        if default_jobs:
+            st.session_state.jobs = default_jobs
             st.session_state.searched = True
 
 # ============================================================
 # SEARCH LOGIC
 # ============================================================
 if search_clicked:
-    with st.spinner("Searching..."):
-        jobs, _ = fetch_jobs(st.session_state.search_role, st.session_state.search_city)
+    with st.spinner(f"Searching..."):
+        jobs, error = fetch_jobs(st.session_state.search_role, st.session_state.search_city)
         if jobs:
             st.session_state.jobs = jobs
             st.session_state.searched = True
@@ -379,19 +275,28 @@ if search_clicked:
         else:
             st.session_state.jobs = []
             st.session_state.searched = True
-            st.error("No jobs found")
+            st.error(error)
 
 # ============================================================
 # RESULTS DISPLAY
 # ============================================================
 if st.session_state.searched:
     if st.session_state.jobs:
-        st.markdown(f'<div class="api-success">🎯 {len(st.session_state.jobs)} jobs found</div>', unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="api-success">
+            🎯 {len(st.session_state.jobs)} jobs found for '{st.session_state.search_role}' in {st.session_state.search_city}
+        </div>
+        """, unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns(3)
-        col1.metric("Jobs Found", len(st.session_state.jobs))
-        col2.metric("Companies", len(set(j.get("company") for j in st.session_state.jobs)))
-        col3.metric("Locations", len(set(j.get("location") for j in st.session_state.jobs)))
+        with col1:
+            st.markdown(f'<div class="stat-box"><div class="stat-number">{len(st.session_state.jobs)}</div><div class="stat-label">Jobs Found</div></div>', unsafe_allow_html=True)
+        with col2:
+            companies = len(set(j.get("company") for j in st.session_state.jobs))
+            st.markdown(f'<div class="stat-box"><div class="stat-number">{companies}</div><div class="stat-label">Companies</div></div>', unsafe_allow_html=True)
+        with col3:
+            locations = len(set(j.get("location") for j in st.session_state.jobs))
+            st.markdown(f'<div class="stat-box"><div class="stat-number">{locations}</div><div class="stat-label">Locations</div></div>', unsafe_allow_html=True)
         
         st.markdown("---")
         
@@ -407,163 +312,68 @@ if st.session_state.searched:
                 """, unsafe_allow_html=True)
                 
                 st.markdown("#### 📝 Description")
-                for line in job['description'][:300].split('.')[:3]:
+                desc_lines = job['description'][:350].split('.')[:4]
+                for line in desc_lines:
                     if line.strip():
                         st.markdown(f'<div class="point-item">• {line.strip()}.</div>', unsafe_allow_html=True)
                 
+                st.markdown("---")
                 col1, col2, col3 = st.columns(3)
+                
                 with col1:
                     if not is_saved:
-                        if st.button("⭐ Save", key=f"save_{idx}"):
+                        if st.button(f"⭐ Save", key=f"save_{idx}"):
                             st.session_state.saved_jobs.append(job)
                             save_saved_jobs(st.session_state.saved_jobs)
+                            st.success("Saved!")
                             st.rerun()
                     else:
                         st.markdown('<span class="saved-badge">✓ Saved</span>', unsafe_allow_html=True)
+                
                 with col2:
                     st.markdown(f"[📋 Apply]({job['url']})", unsafe_allow_html=True)
+                
                 with col3:
-                    if st.button("🏢 Company Info", key=f"info_{idx}"):
-                        details = get_company_details(job['company'], job['title'])
-                        st.session_state.company_details[idx] = details
-                        st.rerun()
+                    if st.button(f"🏢 Company Info", key=f"info_{idx}"):
+                        with st.spinner("Fetching..."):
+                            details = get_company_details(job['company'], job['title'])
+                            st.session_state.company_details[idx] = details
+                            st.rerun()
                 
                 if idx in st.session_state.company_details:
+                    st.markdown("---")
+                    st.markdown(f"#### 🏢 About {job['company']}")
                     st.info(st.session_state.company_details[idx])
-                    if st.button("✖️ Close", key=f"close_{idx}"):
+                    
+                    if st.button(f"✖️ Close", key=f"close_{idx}"):
                         del st.session_state.company_details[idx]
                         st.rerun()
-    else:
-        st.warning("No jobs found. Try different search.")
+    
+    elif st.session_state.jobs == [] and st.session_state.searched:
+        st.warning(f"No jobs found")
+        st.info("💡 Try different job role or location")
 
 # ============================================================
-# SAVED JOBS
+# SAVED JOBS DISPLAY
 # ============================================================
 if st.session_state.saved_jobs:
     st.markdown("---")
     st.markdown("## ⭐ Saved Jobs")
+    
     for idx, job in enumerate(st.session_state.saved_jobs):
         with st.expander(f"💼 {job['title']} - {job['company']}", expanded=False):
-            st.markdown(f"📍 {job['location']} | 💰 {job['salary']}")
-            if st.button("❌ Remove", key=f"rem_{idx}"):
-                st.session_state.saved_jobs.pop(idx)
-                save_saved_jobs(st.session_state.saved_jobs)
-                st.rerun()
-
-# ============================================================
-# CHATBOT - SIMPLE WORKING
-# ============================================================
-st.markdown("""
-<div class="chat-float" id="chatFloatBtn">
-    💬
-</div>
-
-<script>
-    let chatVisible = false;
-    let chatPopup = null;
-    
-    function createChatPopup() {
-        let div = document.createElement('div');
-        div.className = 'chat-popup-box';
-        div.id = 'chatPopupBox';
-        div.innerHTML = `
-            <div class="chat-header">
-                <span>🤖 JobBot</span>
-                <span class="chat-close-btn" id="closeChatPopup">✕</span>
-            </div>
-            <div class="chat-messages-area" id="chatMessagesArea">
-                <div class="msg-bot">
-                    <div class="msg-bot-icon">🤖</div>
-                    <div class="msg-bot-text">👋 Hi! Ask me about jobs, companies, or career advice!</div>
-                </div>
-            </div>
-            <div class="chat-input-container">
-                <input type="text" id="chatInputMsg" placeholder="Type a message..." />
-                <button id="sendChatMsgButton">Send</button>
-            </div>
-        `;
-        document.body.appendChild(div);
-        
-        document.getElementById('closeChatPopup').onclick = function() {
-            closeChatPopup();
-        };
-        
-        document.getElementById('sendChatMsgButton').onclick = function() {
-            sendChatMsg();
-        };
-        
-        document.getElementById('chatInputMsg').onkeypress = function(e) {
-            if (e.key === 'Enter') sendChatMsg();
-        };
-        
-        return div;
-    }
-    
-    function closeChatPopup() {
-        if (chatPopup) {
-            chatPopup.remove();
-            chatPopup = null;
-            chatVisible = false;
-        }
-    }
-    
-    function sendChatMsg() {
-        let input = document.getElementById('chatInputMsg');
-        let msg = input.value.trim();
-        if (msg === '') return;
-        
-        let now = new Date();
-        let timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        
-        let messagesDiv = document.getElementById('chatMessagesArea');
-        messagesDiv.innerHTML += `
-            <div class="msg-user">
-                <div class="msg-user-text">${escapeHtml(msg)}</div>
-            </div>
-            <div class="msg-time" style="text-align: right;">${timeStr}</div>
-        `;
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        input.value = '';
-        
-        let hiddenInput = document.querySelector('input[data-testid="stTextInput"][aria-label="chat_hidden"]');
-        let hiddenBtn = document.querySelector('button[key="send_chat"]');
-        if (hiddenInput && hiddenBtn) {
-            hiddenInput.value = msg;
-            hiddenBtn.click();
-        }
-    }
-    
-    function escapeHtml(text) {
-        let div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-    
-    document.getElementById('chatFloatBtn').onclick = function() {
-        if (chatVisible && chatPopup) {
-            closeChatPopup();
-            chatVisible = false;
-        } else {
-            chatPopup = createChatPopup();
-            chatVisible = true;
-        }
-    };
-</script>
-""", unsafe_allow_html=True)
-
-# Hidden Streamlit elements
-chat_hidden = st.text_input("", key="chat_hidden", label_visibility="collapsed")
-
-if st.button("", key="send_chat"):
-    if chat_hidden:
-        st.session_state.chat_list.append({"role": "user", "content": chat_hidden})
-        bot_reply = chat_response(chat_hidden)
-        st.session_state.chat_list.append({"role": "bot", "content": bot_reply})
-        st.rerun()
-
-for msg in st.session_state.chat_list:
-    if msg["role"] == "bot":
-        st.markdown(f'<div id="botReply" style="display:none;">{msg["content"]}</div>', unsafe_allow_html=True)
+            st.markdown(f"""
+            **Location:** {job['location']}
+            **Salary:** {job['salary']}
+            """)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown(f"[📋 Apply]({job['url']})", unsafe_allow_html=True)
+            with col2:
+                if st.button(f"❌ Remove", key=f"remove_{idx}"):
+                    st.session_state.saved_jobs.pop(idx)
+                    save_saved_jobs(st.session_state.saved_jobs)
+                    st.rerun()
 
 # ============================================================
 # FOOTER

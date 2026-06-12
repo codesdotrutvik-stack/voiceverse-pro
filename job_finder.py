@@ -670,4 +670,4 @@ if st.session_state.chat_open:
 # FOOTER
 # ============================================================
 st.markdown("---")
-st.caption("Job Finder AI | Powered by NB")
+st.caption("💼 Job Finder AI | Powered by Adzuna API + Mistral AI | 💬 Click the circle button to chat")

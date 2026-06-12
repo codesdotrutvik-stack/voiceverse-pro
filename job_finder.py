@@ -85,12 +85,127 @@ st.markdown("""
         margin: 0.2rem;
         cursor: pointer;
         border: 1px solid #e2e8f0;
-        transition: all 0.2s;
     }
     .role-chip:hover {
         background: #667eea;
         color: white;
-        border-color: #667eea;
+    }
+    
+    /* Floating Chatbot Button */
+    .chatbot-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        transition: all 0.3s;
+        font-size: 28px;
+        border: none;
+    }
+    .chatbot-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+    
+    .chat-window {
+        position: fixed;
+        bottom: 85px;
+        right: 20px;
+        width: 350px;
+        height: 450px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        padding: 12px;
+        overflow-y: auto;
+        background: #f8fafc;
+    }
+    
+    .chat-input-area {
+        padding: 10px;
+        background: white;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 8px;
+    }
+    
+    .chat-input-area input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        outline: none;
+    }
+    
+    .chat-input-area button {
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 8px 16px;
+        cursor: pointer;
+    }
+    
+    .user-msg {
+        background: #667eea;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 18px;
+        margin: 5px 0;
+        max-width: 85%;
+        margin-left: auto;
+        font-size: 13px;
+    }
+    
+    .bot-msg {
+        background: white;
+        color: #1e293b;
+        padding: 8px 12px;
+        border-radius: 18px;
+        margin: 5px 0;
+        max-width: 85%;
+        border: 1px solid #e2e8f0;
+        font-size: 13px;
+    }
+    
+    .close-chat {
+        cursor: pointer;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -219,6 +334,33 @@ Return in this format:
     except:
         return f"- Industry: Technology\n- Company: {company_name}\n- Tip: Research the company before interview"
 
+def chat_with_ai(user_message):
+    """Chatbot function"""
+    url = "https://api.mistral.ai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {MISTRAL_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    prompt = f"""You are a helpful assistant for Job Finder AI. Answer the user's question.
+
+User Question: {user_message}
+
+Give a helpful, friendly response. If asked about jobs, companies, or careers, give practical advice.
+Keep response short (2-3 sentences)."""
+
+    data = {
+        "model": "mistral-small-latest",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 200
+    }
+    
+    try:
+        response = requests.post(url, json=data, headers=headers, timeout=15)
+        return response.json()["choices"][0]["message"]["content"]
+    except:
+        return "I'm here to help! Ask me about jobs, companies, or careers."
+
 # ============================================================
 # SESSION STATE
 # ============================================================
@@ -234,6 +376,68 @@ if "search_role" not in st.session_state:
     st.session_state.search_role = DEFAULT_ROLE
 if "search_city" not in st.session_state:
     st.session_state.search_city = DEFAULT_CITY
+if "chat_open" not in st.session_state:
+    st.session_state.chat_open = False
+if "chat_messages" not in st.session_state:
+    st.session_state.chat_messages = [
+        {"role": "bot", "content": "👋 Hello! I'm your AI assistant. Ask me anything about jobs, companies, or career advice!"}
+    ]
+
+# ============================================================
+# CHATBOT HTML
+# ============================================================
+chat_html = """
+<div id="chatbot-container"></div>
+<script>
+    let chatOpen = false;
+    
+    function toggleChat() {
+        chatOpen = !chatOpen;
+        const container = document.getElementById('chatbot-container');
+        if (chatOpen) {
+            container.innerHTML = `
+                <div class="chat-window">
+                    <div class="chat-header">
+                        <span>🤖 AI Assistant</span>
+                        <div class="close-chat" onclick="toggleChat()">✕</div>
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="bot-msg">👋 Hello! Ask me anything about jobs, companies, or career advice!</div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Type your message..." />
+                        <button onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+                <div class="chatbot-btn" onclick="toggleChat()">💬</div>
+            `;
+        } else {
+            container.innerHTML = `<div class="chatbot-btn" onclick="toggleChat()">💬</div>`;
+        }
+    }
+    
+    function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const message = input.value;
+        if (!message.trim()) return;
+        
+        const messagesDiv = document.getElementById('chat-messages');
+        messagesDiv.innerHTML += `<div class="user-msg">${message}</div>`;
+        input.value = '';
+        
+        // Send to backend
+        fetch('/_stcore/stream/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: message})
+        });
+    }
+    
+    // Initial button
+    const container = document.getElementById('chatbot-container');
+    container.innerHTML = `<div class="chatbot-btn" onclick="toggleChat()">💬</div>`;
+</script>
+"""
 
 # ============================================================
 # SIDEBAR
@@ -404,7 +608,80 @@ if st.session_state.saved_jobs:
                     st.rerun()
 
 # ============================================================
+# CHATBOT
+# ============================================================
+st.markdown("""
+<style>
+    .fixed-chatbot {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Chatbot toggle button
+col1, col2, col3 = st.columns([10, 1, 1])
+with col3:
+    if st.button("💬", key="chat_toggle_btn", help="Chat with AI Assistant"):
+        st.session_state.chat_open = not st.session_state.chat_open
+        st.rerun()
+
+# Chat window
+if st.session_state.chat_open:
+    with st.container():
+        st.markdown("""
+        <div style="
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 350px;
+            height: 450px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        ">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; font-weight: 600; display: flex; justify-content: space-between;">
+                <span>🤖 AI Assistant</span>
+                <span style="cursor: pointer;" onclick="window.location.reload()">✕</span>
+            </div>
+            <div style="flex: 1; padding: 12px; overflow-y: auto; background: #f8fafc;">
+        """, unsafe_allow_html=True)
+        
+        # Display chat messages
+        for msg in st.session_state.chat_messages:
+            if msg["role"] == "user":
+                st.markdown(f'<div style="background: #667eea; color: white; padding: 8px 12px; border-radius: 18px; margin: 5px 0; max-width: 85%; margin-left: auto; font-size: 13px;">{msg["content"]}</div>', unsafe_allow_html=True)
+            else:
+                st.markdown(f'<div style="background: white; color: #1e293b; padding: 8px 12px; border-radius: 18px; margin: 5px 0; max-width: 85%; border: 1px solid #e2e8f0; font-size: 13px;">{msg["content"]}</div>', unsafe_allow_html=True)
+        
+        st.markdown("""
+            </div>
+            <div style="padding: 10px; background: white; border-top: 1px solid #e2e8f0;">
+        """, unsafe_allow_html=True)
+        
+        chat_input = st.text_input("", key="chat_input", placeholder="Type your message...", label_visibility="collapsed")
+        
+        col1, col2 = st.columns([4, 1])
+        with col2:
+            if st.button("Send", key="chat_send"):
+                if chat_input:
+                    st.session_state.chat_messages.append({"role": "user", "content": chat_input})
+                    with st.spinner("Thinking..."):
+                        response = chat_with_ai(chat_input)
+                        st.session_state.chat_messages.append({"role": "bot", "content": response})
+                    st.rerun()
+        
+        st.markdown("</div></div>", unsafe_allow_html=True)
+
+# ============================================================
 # FOOTER
 # ============================================================
 st.markdown("---")
-st.caption("💼 Job Finder AI | Powered by NB | jobs from, India")
+st.caption("Job Finder AI | Powered by NB")

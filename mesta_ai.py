@@ -288,18 +288,36 @@ if "mode" not in st.session_state:
 # gTTS FUNCTION (Replaces pyttsx3)
 # ============================================================
 def speak_with_gtts(text):
-    """Convert text to speech using gTTS and play automatically"""
+    """Convert text to speech using gTTS - autoplay workaround for browsers"""
     try:
         tts = gTTS(text=text, lang="en", slow=False)
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
             tts.save(fp.name)
             with open(fp.name, "rb") as f:
                 audio_bytes = f.read()
-            b64 = base64.b64encode(audio_bytes).decode()
             os.unlink(fp.name)
-            return f'<audio autoplay="true" src="data:audio/mp3;base64,{b64}"></audio>'
+        
+        b64 = base64.b64encode(audio_bytes).decode()
+        
+        # JS trick: create and play via AudioContext to bypass autoplay block
+        audio_html = f"""
+        <script>
+        (function() {{
+            const audio = new Audio("data:audio/mp3;base64,{b64}");
+            audio.play().catch(function(e) {{
+                // Fallback: show a play button if autoplay is blocked
+                const btn = document.createElement('button');
+                btn.innerText = '▶ Play Response';
+                btn.style.cssText = 'background:#8b5cf6;color:white;border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:14px;margin:8px 0;';
+                btn.onclick = function() {{ audio.play(); }};
+                document.body.appendChild(btn);
+            }});
+        }})();
+        </script>
+        """
+        return audio_html
     except Exception as e:
-        return ""
+        return f"<p style='color:red;font-size:12px;'>TTS Error: {str(e)}</p>"
 
 # ============================================================
 # MODE TOGGLE

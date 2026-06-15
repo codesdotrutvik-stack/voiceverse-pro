@@ -1,0 +1,91 @@
+[
+  {
+    "id": "t1",
+    "title": "Design landing page mockup",
+    "desc": "Create wireframes and high-fidelity designs for the new landing page.",
+    "column": "review",
+    "labels": [
+      "#7f77dd",
+      "#f8c844"
+    ],
+    "due": "2026-06-25",
+    "priority": "High",
+    "assignees": [
+      0,
+      1
+    ],
+    "comments": [
+      {
+        "id": "c1",
+        "author": "AJ",
+        "text": "Started wireframes, will share tomorrow.",
+        "time": "2d ago"
+      }
+    ],
+    "checklist": [
+      {
+        "id": "i1",
+        "text": "Wireframes",
+        "done": true
+      },
+      {
+        "id": "i2",
+        "text": "Hi-fi mockups",
+        "done": false
+      },
+      {
+        "id": "i3",
+        "text": "Stakeholder sign-off",
+        "done": false
+      }
+    ],
+    "created_at": "2026-06-10"
+  },
+  {
+    "id": "t2",
+    "title": "Set up CI/CD pipeline",
+    "desc": "Configure GitHub Actions for automated testing and deployment.",
+    "column": "done",
+    "labels": [
+      "#4c9aff",
+      "#d4537e"
+    ],
+    "due": "2026-06-28",
+    "priority": "Medium",
+    "assignees": [
+      2,
+      1
+    ],
+    "comments": [],
+    "checklist": [
+      {
+        "id": "i4",
+        "text": "GitHub Actions config",
+        "done": false
+      },
+      {
+        "id": "i5",
+        "text": "Test stage",
+        "done": false
+      }
+    ],
+    "created_at": "2026-06-11"
+  },
+  {
+    "id": "77ddbd54",
+    "title": "shopidy gerbna",
+    "desc": "figma  to web",
+    "column": "upcoming",
+    "labels": [
+      "#4c9aff"
+    ],
+    "due": "2026-06-15",
+    "priority": "Medium",
+    "assignees": [
+      0
+    ],
+    "comments": [],
+    "checklist": [],
+    "created_at": "2026-06-12"
+  }
+]

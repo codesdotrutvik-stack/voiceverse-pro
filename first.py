@@ -227,3 +227,16 @@ def multiply(a, b):
 print(multiply(4, 5))  # 20
 
 
+
+# String methods you MUST know
+text = "  Hello Python World  "
+
+# Common methods
+print(text.lower())     
+print(text.upper())      
+print(text.strip())      
+print(text.split())     
+print("-".join(["a","b","c"]))  
+print(text.replace("Python", "Java"))  
+print(text.find("Python"))  
+print("Python" in text)     

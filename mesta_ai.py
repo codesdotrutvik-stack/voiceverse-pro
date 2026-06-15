@@ -21,6 +21,10 @@ html, body, [class*="css"], .stApp {
     padding: 1.4rem 0 1.2rem 0;
     border-bottom: 1px solid rgba(255,255,255,0.05);
 }
+[data-testid="stTextInputRootElement"] {
+    background-color: transparent !important;
+    border: none !important;
+}
 .header-left { display: flex; align-items: center; gap: 12px; }
 .header-logo {
     width: 44px; height: 44px;

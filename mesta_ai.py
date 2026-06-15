@@ -42,9 +42,9 @@ html, body, [class*="css"], .stApp {
     padding: 4px 12px; border-radius: 20px; color: #64748b;
 }
 
-/* INPUT - FULLY DARK */
+/* INPUT - VISIBILITY FIXED & WHITE BORDER REMOVED */
 .stTextInput > div > div > input {
-    background: #12131e !important;
+    background: #161726 !important;
     border: 1px solid rgba(139,92,246,0.3) !important;
     border-radius: 50px !important;
     padding: 15px 24px !important;
@@ -52,19 +52,17 @@ html, body, [class*="css"], .stApp {
     font-size: 0.93rem !important;
     font-family: 'Inter', sans-serif !important;
     caret-color: #a78bfa !important;
-    -webkit-text-fill-color: #f1f5f9 !important;
     box-shadow: none !important;
 }
 .stTextInput > div > div > input::placeholder {
-    color: #2d3748 !important;
-    -webkit-text-fill-color: #2d3748 !important;
-    opacity: 1 !important;
+    color: #94a3b8 !important;
+    opacity: 0.6 !important;
 }
 .stTextInput > div > div > input:focus {
-    border-color: rgba(139,92,246,0.6) !important;
-    box-shadow: 0 0 0 3px rgba(139,92,246,0.1) !important;
-    background: #14152a !important;
-    -webkit-text-fill-color: #f1f5f9 !important;
+    border-color: rgba(139,92,246,0.7) !important;
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.15) !important;
+    background: #1a1c30 !important;
+    outline: none !important;
 }
 
 /* BUTTONS */
@@ -81,7 +79,7 @@ html, body, [class*="css"], .stApp {
 .stButton > button:hover {
     background: #1a1b2e !important;
     color: #e2e8f0 !important;
-    border-color: rgba(255,255,255,0.15) !important;
+    border-color: rgba(139,92,246,0.4) !important;
 }
 .stButton > button[kind="primary"] {
     background: linear-gradient(135deg, #7c3aed, #4f46e5) !important;
@@ -112,14 +110,14 @@ html, body, [class*="css"], .stApp {
     font-size: 0.68rem; font-weight: 600; color: #a78bfa;
     margin-bottom: 6px; display: flex; align-items: center; gap: 5px;
 }
-.msg-time { font-size: 0.6rem; color: #2d3748; margin-top: 6px; }
+.msg-time { font-size: 0.6rem; color: #475569; margin-top: 6px; }
 
 .section-label {
     font-size: 0.63rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1.5px; color: #2d3748; margin: 1.6rem 0 0.9rem 0;
+    letter-spacing: 1.5px; color: #475569; margin: 1.6rem 0 0.9rem 0;
 }
 .divider { height: 1px; background: rgba(255,255,255,0.04); margin: 1.2rem 0; }
-.mode-indicator { font-size: 0.72rem; color: #334155; margin-bottom: 1rem; }
+.mode-indicator { font-size: 0.72rem; color: #475569; margin-bottom: 1rem; }
 .footer {
     text-align: center; font-size: 0.6rem; color: #1e293b;
     padding: 2rem; margin-top: 2rem;
@@ -163,7 +161,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# HERO - no name, clean tagline
+# HERO
 st.markdown("""
 <div style="text-align:center;padding:2.2rem 0 1rem 0;">
     <div style="font-size:2rem;font-weight:700;background:linear-gradient(135deg,#a78bfa,#818cf8,#60a5fa);
@@ -174,7 +172,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# WAVE ANIMATION - self-contained iframe with proper stop logic
+# WAVE ANIMATION
 st.components.v1.html("""
 <!DOCTYPE html>
 <html>
@@ -260,14 +258,12 @@ function animateBars() {
     animFrame = requestAnimationFrame(animateBars);
 }
 
-// Listen for speak/stop messages from Streamlit component
 window.addEventListener('message', function(e) {
     if (!e.data) return;
     if (e.data.type === 'mesta_speak') startSpeak();
     if (e.data.type === 'mesta_stop')  stopSpeak();
 });
 
-// Also expose globally so TTS script can call directly
 window.mestaStartSpeak = startSpeak;
 window.mestaStopSpeak  = stopSpeak;
 </script>
@@ -275,7 +271,7 @@ window.mestaStopSpeak  = stopSpeak;
 </html>
 """, height=100)
 
-# TTS FUNCTION - proper voice selection + wave control + stop on end
+# TTS FUNCTION
 def speak_text(text, voice_type="man"):
     safe = text.replace("'", "\\'").replace("\n", " ").replace('"', '\\"')
 
@@ -292,7 +288,7 @@ def speak_text(text, voice_type="man"):
         if(!v) v = allVoices.find(function(x){return x.lang==='en-US';});
         msg.pitch = 1.25; msg.rate = 1.0;
         """
-    else:  # realistic
+    else:
         voice_filter = """
         v = allVoices.find(function(x){return /google|neural|natural|premium|enhanced/i.test(x.name) && x.lang.startsWith('en');});
         if(!v) v = allVoices.find(function(x){return x.lang==='en-US' && /google/i.test(x.name);});

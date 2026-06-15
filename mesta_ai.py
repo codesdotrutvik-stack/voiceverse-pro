@@ -25,6 +25,9 @@ html, body, [class*="css"], .stApp {
     background-color: transparent !important;
     border: none !important;
 }
+[data-baseweb="base-input"] {
+    background-color: transparent !important;
+}
 .header-left { display: flex; align-items: center; gap: 12px; }
 .header-logo {
     width: 44px; height: 44px;

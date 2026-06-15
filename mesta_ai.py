@@ -3,7 +3,6 @@ import requests
 import base64
 import os
 import tempfile
-from gtts import gTTS
 from datetime import datetime
 
 st.set_page_config(page_title="Mesta AI", page_icon="✨", layout="wide")
@@ -36,10 +35,6 @@ html, body, [class*="css"], .stApp {
 /* ── HIDE STREAMLIT CHROME ── */
 #MainMenu, footer, header { visibility: hidden; }
 .block-container { padding: 2rem 2rem 5rem !important; max-width: 880px !important; }
-
-/* ── HIDE HIDDEN BUTTONS (mode switchers) ── */
-[data-testid="column"]:has(button[kind="secondary"][data-hidden="true"]) { display: none !important; }
-.hidden-btn-row { display: none !important; height: 0 !important; overflow: hidden !important; }
 
 /* ── ANIMATED BACKGROUND GRADIENT ── */
 .stApp::before {
@@ -489,8 +484,7 @@ def ask_mesta(q: str) -> str:
                 "messages": [
                     {"role": "system", "content":
                      "You are Mesta AI, a premium intelligent assistant. "
-                     "Answer clearly and concisely in 2-3 sentences. Be warm and precise. "
-                     "Do not mention any creator names or who built you."},
+                     "Answer clearly and concisely in 2-3 sentences. Be warm and precise."},
                     {"role": "user", "content": q},
                 ],
                 "max_tokens": 250,
@@ -499,22 +493,7 @@ def ask_mesta(q: str) -> str:
         )
         return r.json()["choices"][0]["message"]["content"].strip()
     except Exception as e:
-        return f"Connection issue — please try again. ({e})"
-
-
-def tts_autoplay(text: str) -> str:
-    try:
-        tts = gTTS(text=text, lang="en", slow=False)
-        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
-            tts.save(f.name); tmp = f.name
-        with open(tmp, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode()
-        os.unlink(tmp)
-        return (f'<audio autoplay style="display:none">'
-                f'<source src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>')
-    except Exception:
-        return ""
-
+        return f"Connection issue — please try again."
 
 def process(question: str):
     answer = ask_mesta(question)
@@ -523,10 +502,7 @@ def process(question: str):
         "t": datetime.now().strftime("%I:%M %p"),
     })
     safe = answer.replace("\\","\\\\").replace("'","\\'").replace("\n"," ")
-    st.session_state.audio_html = (
-        tts_autoplay(answer)
-        + f"<script>setTimeout(()=>browserSpeak('{safe}'),500);</script>"
-    )
+    st.session_state.audio_html = f"<script>setTimeout(()=>browserSpeak('{safe}'),500);</script>"
     st.rerun()
 
 
@@ -546,7 +522,7 @@ with st.sidebar:
 <div style='font-size:.78rem;color:#3f3f46;line-height:1.9;margin-top:8px'>
 ⌨️ &nbsp;<span style='color:#52525b'>Text</span> — Type &amp; ask<br>
 🎤 &nbsp;<span style='color:#52525b'>Voice</span> — Speak naturally<br>
-🔊 &nbsp;<span style='color:#52525b'>AI</span> always replies with voice
+🔊 &nbsp;<span style='color:#52525b'>AI</span> replies with voice
 </div>
 """, unsafe_allow_html=True)
     st.markdown("<div style='height:1px;background:rgba(255,255,255,0.05);margin:14px 0'></div>",
@@ -575,7 +551,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────
-# MODE TOGGLE — using st.radio (actually works, no hidden buttons)
+# MODE TOGGLE
 # ─────────────────────────────────────────────────────────────
 mode_options = ["⌨️  Text", "🎤  Voice"]
 selected = st.radio(

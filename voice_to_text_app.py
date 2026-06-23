@@ -25,7 +25,7 @@ st.markdown("""
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
 .stApp { background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%); }
-.block-container { padding: 2rem; max-width: 1000px; }
+.block-container { padding: 2rem; max-width: 1200px; }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(12px); }
@@ -59,6 +59,21 @@ st.markdown("""
     transition: all 0.2s ease;
 }
 .glass-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+
+/* Full Width Uploader */
+[data-testid="stFileUploader"] {
+    width: 100% !important;
+    background: rgba(255,255,255,0.3) !important;
+    border: 2px dashed #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+}
+[data-testid="stFileUploader"]:hover { border-color: #7c3aed !important; }
+
+/* Full Width Video/Audio */
+[data-testid="stVideo"], [data-testid="stAudio"] {
+    width: 100% !important;
+}
 
 .text-box {
     background: rgba(255,255,255,0.85);
@@ -130,40 +145,6 @@ st.markdown("""
     margin-bottom: 0.6rem;
 }
 
-.stTextInput > div > div > input {
-    background: white !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    padding: 10px 16px !important;
-    color: #1e293b !important;
-}
-.stTextInput > div > div > input:focus {
-    border-color: #7c3aed !important;
-    box-shadow: 0 0 0 3px rgba(124,58,237,0.08) !important;
-}
-
-.stSelectbox > div > div > div {
-    background: white !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    color: #1e293b !important;
-}
-
-[data-testid="stFileUploader"] {
-    background: rgba(255,255,255,0.3) !important;
-    border: 2px dashed #e2e8f0 !important;
-    border-radius: 12px !important;
-    padding: 1rem !important;
-}
-[data-testid="stFileUploader"]:hover { border-color: #7c3aed !important; }
-
-[data-testid="stAudioInput"] {
-    background: rgba(255,255,255,0.3) !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
-    padding: 0.5rem !important;
-}
-
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: #f1f5f9; }
 ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 10px; }
@@ -174,6 +155,18 @@ st.markdown("""
     padding: 10px;
     border-radius: 8px;
     border-left: 4px solid #10b981;
+}
+
+/* Speaker label styling */
+.speaker-label {
+    color: #7c3aed;
+    font-weight: 600;
+    display: block;
+    margin-top: 8px;
+    font-size: 0.85rem;
+}
+.speaker-text {
+    margin-left: 8px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -228,6 +221,18 @@ Text:
     except:
         return "Translation failed."
 
+def format_transcript(transcript, conversation_mode):
+    """Format transcript based on mode"""
+    if conversation_mode and transcript.utterances:
+        formatted = ""
+        for utterance in transcript.utterances:
+            speaker = f"Speaker {utterance.speaker}"
+            formatted += f"**{speaker}:** {utterance.text}\n\n"
+        return formatted
+    else:
+        # Return plain text without speaker labels
+        return transcript.text
+
 # ============================================================
 # HEADER
 # ============================================================
@@ -265,19 +270,13 @@ with st.container():
                 transcript = transcriber.transcribe(temp_file)
                 
                 if transcript.text:
-                    if transcript.utterances:
-                        formatted = ""
-                        for utterance in transcript.utterances:
-                            speaker = f"Speaker {utterance.speaker}"
-                            formatted += f"**{speaker}:** {utterance.text}\n\n"
-                        st.session_state.transcribed_text = formatted
-                        st.session_state.original_text = formatted
-                    else:
-                        st.session_state.transcribed_text = transcript.text
-                        st.session_state.original_text = transcript.text
+                    formatted = format_transcript(transcript, True)
+                    st.session_state.transcribed_text = formatted
+                    st.session_state.original_text = transcript.text
                     
                     st.session_state.history.append({
-                        "full_text": st.session_state.original_text,
+                        "full_text": formatted,
+                        "plain_text": transcript.text,
                         "time": datetime.now().strftime("%I:%M %p, %d %b"),
                         "mode": "Conversation",
                         "duration": "Recorded"
@@ -298,7 +297,7 @@ with st.container():
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================================
-# UPLOAD SECTION (Removed Duration)
+# UPLOAD SECTION
 # ============================================================
 with st.container():
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -312,18 +311,18 @@ with st.container():
     )
 
     if uploaded_file is not None:
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            file_type = uploaded_file.type
-            if "video" in file_type or uploaded_file.name.lower().endswith((".mp4", ".mov", ".avi", ".mkv")):
-                st.video(uploaded_file)
-            else:
-                st.audio(uploaded_file, format="audio/wav")
-            file_size = len(uploaded_file.getvalue()) / (1024 * 1024)
-            st.caption(f"📁 {uploaded_file.name} | {file_size:.2f} MB")
+        # File preview - Full width
+        file_type = uploaded_file.type
+        if "video" in file_type or uploaded_file.name.lower().endswith((".mp4", ".mov", ".avi", ".mkv")):
+            st.video(uploaded_file)
+        else:
+            st.audio(uploaded_file, format="audio/wav")
         
-        with col2:
-            conversation_mode = st.checkbox("💬 Conversation Mode (Speaker Labels)", value=True)
+        file_size = len(uploaded_file.getvalue()) / (1024 * 1024)
+        st.caption(f"📁 {uploaded_file.name} | {file_size:.2f} MB")
+        
+        # Speaker toggle below file
+        conversation_mode = st.checkbox("💬 Conversation Mode (Speaker Labels)", value=True)
 
         if st.button("🎯 Transcribe", type="primary", use_container_width=True):
             with st.spinner("⏳ Transcribing..."):
@@ -334,7 +333,7 @@ with st.container():
                         f.write(uploaded_file.getbuffer())
                     
                     config_params = {
-                        "speaker_labels": True if conversation_mode else False,
+                        "speaker_labels": True,
                         "speakers_expected": 2
                     }
                     
@@ -343,20 +342,14 @@ with st.container():
                     transcript = transcriber.transcribe(temp_file)
                     
                     if transcript.text:
-                        if conversation_mode and transcript.utterances:
-                            formatted = ""
-                            for utterance in transcript.utterances:
-                                speaker = f"Speaker {utterance.speaker}"
-                                formatted += f"**{speaker}:** {utterance.text}\n\n"
-                            st.session_state.transcribed_text = formatted
-                            st.session_state.original_text = formatted
-                        else:
-                            st.session_state.transcribed_text = transcript.text
-                            st.session_state.original_text = transcript.text
+                        formatted = format_transcript(transcript, conversation_mode)
+                        st.session_state.transcribed_text = formatted
+                        st.session_state.original_text = transcript.text
                         
                         st.session_state.translated_text = ""
                         st.session_state.history.append({
-                            "full_text": st.session_state.original_text,
+                            "full_text": formatted,
+                            "plain_text": transcript.text,
                             "time": datetime.now().strftime("%I:%M %p, %d %b"),
                             "mode": "Conversation" if conversation_mode else "Standard",
                             "duration": "Full"
@@ -427,7 +420,7 @@ if st.session_state.get("show_translate", False) and st.session_state.original_t
     
     if translate_btn:
         with st.spinner("Translating..."):
-            translated = translate_text(st.session_state.original_text, target_lang)
+            translated = translate_text(st.session_state.transcribed_text, target_lang)
             if translated:
                 st.session_state.translated_text = translated
                 st.markdown(f'<div class="text-box" style="border-color: #fbbf24;">{translated}</div>', unsafe_allow_html=True)

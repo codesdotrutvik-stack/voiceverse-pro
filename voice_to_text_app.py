@@ -4,6 +4,7 @@ from datetime import datetime
 import os
 import requests
 import json
+import base64
 
 st.set_page_config(page_title="Voice to Text Pro", page_icon="🎤", layout="wide")
 
@@ -16,32 +17,43 @@ MISTRAL_KEY = "tXPmUYPeEqwD48MrvREFmn3GmvB7KqRk"
 aai.settings.api_key = ASSEMBLYAI_KEY
 
 # ============================================================
-# PREMIUM DARK CSS
+# PREMIUM LIGHT MODE CSS
 # ============================================================
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-.stApp { background: #0a0a12; }
+
+.stApp {
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8edf5 100%);
+}
 .block-container { padding: 2rem; max-width: 1000px; }
 
+/* Animated Gradient Header */
 @keyframes shimmer {
     0% { background-position: -200% center; }
     100% { background-position: 200% center; }
 }
 @keyframes float {
     0% { transform: translateY(0px); }
-    50% { transform: translateY(-6px); }
+    50% { transform: translateY(-8px); }
     100% { transform: translateY(0px); }
 }
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0px); }
 }
+@keyframes glowPulse {
+    0% { box-shadow: 0 0 20px rgba(124,58,237,0.15); }
+    50% { box-shadow: 0 0 40px rgba(124,58,237,0.25); }
+    100% { box-shadow: 0 0 20px rgba(124,58,237,0.15); }
+}
+
 .main-title {
     font-size: 2.8rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #a78bfa, #7c3aed, #4f46e5, #a78bfa);
+    background: linear-gradient(135deg, #7c3aed, #4f46e5, #7c3aed);
     background-size: 300% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -49,26 +61,38 @@ st.markdown("""
     animation: shimmer 6s linear infinite;
     letter-spacing: -0.02em;
 }
-.main-sub { color: #94a3b8; text-align: center; font-size: 1rem; margin-bottom: 1.5rem; animation: fadeIn 0.8s ease; }
+.main-sub {
+    color: #6b7280;
+    text-align: center;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    animation: fadeIn 0.8s ease;
+}
 
+/* Premium Glass Card - Light Mode */
 .glass-card {
-    background: rgba(255,255,255,0.03);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 20px;
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 24px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06);
     transition: all 0.3s ease;
 }
-.glass-card:hover { border-color: rgba(139,92,246,0.2); }
+.glass-card:hover {
+    box-shadow: 0 12px 48px rgba(124,58,237,0.10);
+    border-color: rgba(124,58,237,0.15);
+}
 
 .text-box {
-    background: #12121e;
-    border: 1px solid rgba(139,92,246,0.2);
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(124,58,237,0.12);
     border-radius: 16px;
     padding: 20px;
     min-height: 120px;
-    color: #e2e8f0;
+    color: #1e293b;
     font-size: 0.95rem;
     line-height: 1.8;
     white-space: pre-wrap;
@@ -78,16 +102,22 @@ st.markdown("""
 }
 
 .history-item {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 12px 16px;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(124,58,237,0.08);
+    border-radius: 16px;
+    padding: 14px 18px;
     margin: 10px 0;
     transition: all 0.3s ease;
     animation: fadeIn 0.5s ease;
 }
-.history-item:hover { border-color: rgba(139,92,246,0.3); transform: translateX(4px); }
-.history-time { color: #475569; font-size: 0.7rem; }
+.history-item:hover {
+    border-color: rgba(124,58,237,0.3);
+    transform: translateX(4px);
+    box-shadow: 0 4px 16px rgba(124,58,237,0.08);
+}
+
+.history-time { color: #94a3b8; font-size: 0.7rem; }
 
 .stButton > button {
     background: linear-gradient(135deg, #7c3aed, #4f46e5) !important;
@@ -96,20 +126,21 @@ st.markdown("""
     border-radius: 50px !important;
     font-weight: 600 !important;
     transition: all 0.3s !important;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.2) !important;
 }
 .stButton > button:hover {
     transform: scale(1.02);
-    box-shadow: 0 8px 25px rgba(124,58,237,0.25);
+    box-shadow: 0 8px 32px rgba(124,58,237,0.3) !important;
 }
 
 .divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(139,92,246,0.15), transparent);
+    background: linear-gradient(90deg, transparent, rgba(124,58,237,0.12), transparent);
     margin: 1.5rem 0;
 }
 
 .section-title {
-    color: #94a3b8;
+    color: #6b7280;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -118,49 +149,65 @@ st.markdown("""
 }
 
 .stTextInput > div > div > input {
-    background: #12121e !important;
-    border: 1px solid rgba(139,92,246,0.2) !important;
+    background: rgba(255,255,255,0.7) !important;
+    border: 1px solid rgba(124,58,237,0.12) !important;
     border-radius: 50px !important;
     padding: 12px 20px !important;
-    color: #e2e8f0 !important;
+    color: #1e293b !important;
 }
 .stTextInput > div > div > input:focus {
     border-color: #7c3aed !important;
-    box-shadow: 0 0 0 3px rgba(124,58,237,0.1) !important;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.08) !important;
 }
 
 .stSelectbox > div > div > div {
-    background: #12121e !important;
-    border: 1px solid rgba(139,92,246,0.2) !important;
+    background: rgba(255,255,255,0.7) !important;
+    border: 1px solid rgba(124,58,237,0.12) !important;
     border-radius: 12px !important;
-    color: #e2e8f0 !important;
+    color: #1e293b !important;
 }
 
 .stNumberInput > div > div > input {
-    background: #12121e !important;
-    border: 1px solid rgba(139,92,246,0.2) !important;
+    background: rgba(255,255,255,0.7) !important;
+    border: 1px solid rgba(124,58,237,0.12) !important;
     border-radius: 12px !important;
-    color: #e2e8f0 !important;
+    color: #1e293b !important;
 }
 
 [data-testid="stFileUploader"] {
-    background: rgba(255,255,255,0.02) !important;
-    border: 2px dashed rgba(139,92,246,0.2) !important;
+    background: rgba(255,255,255,0.4) !important;
+    border: 2px dashed rgba(124,58,237,0.2) !important;
     border-radius: 16px !important;
     padding: 1rem !important;
 }
 [data-testid="stFileUploader"]:hover { border-color: #7c3aed !important; }
 
 [data-testid="stAudioInput"] {
-    background: rgba(255,255,255,0.02) !important;
-    border: 1px solid rgba(139,92,246,0.2) !important;
+    background: rgba(255,255,255,0.4) !important;
+    border: 1px solid rgba(124,58,237,0.12) !important;
     border-radius: 16px !important;
     padding: 0.5rem !important;
 }
 
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #12121e; }
+::-webkit-scrollbar-track { background: #e8edf5; }
 ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 10px; }
+
+/* Status messages */
+.success-status {
+    background: rgba(52,211,153,0.15);
+    color: #065f46;
+    padding: 12px;
+    border-radius: 12px;
+    border-left: 4px solid #10b981;
+}
+.error-status {
+    background: rgba(239,68,68,0.1);
+    color: #991b1b;
+    padding: 12px;
+    border-radius: 12px;
+    border-left: 4px solid #ef4444;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -175,6 +222,8 @@ if "original_text" not in st.session_state:
     st.session_state.original_text = ""
 if "translated_text" not in st.session_state:
     st.session_state.translated_text = ""
+if "copy_status" not in st.session_state:
+    st.session_state.copy_status = ""
 
 # ============================================================
 # FUNCTIONS
@@ -212,11 +261,32 @@ Text:
     except:
         return "Translation failed."
 
+def copy_to_clipboard(text):
+    """Copy text to clipboard using JavaScript"""
+    return f"""
+    <script>
+        function copyText() {{
+            navigator.clipboard.writeText(`{text}`).then(function() {{
+                document.getElementById('copyStatus').innerHTML = '✅ Copied to clipboard!';
+                document.getElementById('copyStatus').style.color = '#10b981';
+            }});
+        }}
+        copyText();
+    </script>
+    """
+
 # ============================================================
 # HEADER
 # ============================================================
 st.markdown('<div class="main-title">🎤 Voice to Text Pro</div>', unsafe_allow_html=True)
 st.markdown('<div class="main-sub">Upload audio/video • Record voice • AI transcribes • Translate</div>', unsafe_allow_html=True)
+
+# ============================================================
+# COPY STATUS
+# ============================================================
+if st.session_state.copy_status:
+    st.markdown(f'<div class="success-status">{st.session_state.copy_status}</div>', unsafe_allow_html=True)
+    st.session_state.copy_status = ""
 
 # ============================================================
 # RECORD SECTION
@@ -315,11 +385,9 @@ with st.container():
                     with open(temp_file, "wb") as f:
                         f.write(uploaded_file.getbuffer())
                     
-                    # Convert minutes to seconds
                     start_sec = start_min * 60
                     end_sec = end_min * 60
                     
-                    # Build config with correct parameters
                     config_params = {
                         "speaker_labels": True if conversation_mode else False,
                         "speakers_expected": 2
@@ -378,7 +446,8 @@ if st.session_state.transcribed_text:
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         if st.button("📋 Copy", use_container_width=True):
-            st.success("✅ Copied!")
+            st.session_state.copy_status = "✅ Copied to clipboard!"
+            st.rerun()
     with col2:
         if st.button("📥 Download", use_container_width=True):
             st.download_button(
@@ -399,29 +468,43 @@ if st.session_state.transcribed_text:
             st.rerun()
 
 # ============================================================
-# TRANSLATION
+# TRANSLATION MODERN DESIGN
 # ============================================================
 if st.session_state.get("show_translate", False) and st.session_state.original_text:
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-title">🌍 Translate</div>', unsafe_allow_html=True)
     
-    target_lang = st.selectbox("Select language", ["Hindi", "Gujarati", "Spanish", "French", "German", "Chinese", "Japanese"])
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        target_lang = st.selectbox(
+            "Select language",
+            ["Hindi", "Gujarati", "Spanish", "French", "German", "Chinese", "Japanese"],
+            label_visibility="collapsed"
+        )
+    with col2:
+        translate_btn = st.button("Translate", type="primary", use_container_width=True)
     
-    if st.button("Translate", type="primary"):
+    if translate_btn:
         with st.spinner("Translating..."):
             translated = translate_text(st.session_state.original_text, target_lang)
             if translated:
                 st.session_state.translated_text = translated
                 st.markdown(f'<div class="text-box" style="border-color: rgba(251,191,36,0.3);">{translated}</div>', unsafe_allow_html=True)
-                st.download_button(
-                    label="📥 Download Translation",
-                    data=translated,
-                    file_name=f"translation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                    mime="text/plain"
-                )
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("📋 Copy Translation", use_container_width=True):
+                        st.session_state.copy_status = "✅ Translation copied!"
+                        st.rerun()
+                with col2:
+                    st.download_button(
+                        label="📥 Download Translation",
+                        data=translated,
+                        file_name=f"translation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                        mime="text/plain"
+                    )
 
 # ============================================================
-# HISTORY WITH FIXED COPY/DOWNLOAD
+# HISTORY WITH COPY/DOWNLOAD
 # ============================================================
 if st.session_state.history:
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
@@ -429,25 +512,30 @@ if st.session_state.history:
     
     for idx, item in enumerate(reversed(st.session_state.history)):
         safe_text = item['full_text'].replace('`', '\\`').replace('"', '\\"').replace("'", "\\'").replace('\n', ' ')
+        short_text = item['full_text'][:200] + ('...' if len(item['full_text']) > 200 else '')
         
-        st.markdown(f"""
-        <div class="history-item">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <span style="color: #a78bfa; font-weight: 600;">{item['mode']}</span>
-                    <span style="color: #475569; font-size: 0.7rem; margin-left: 8px;">{item['duration']}</span>
+        with st.container():
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                st.markdown(f"""
+                <div class="history-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="color: #7c3aed; font-weight: 600;">{item['mode']}</span>
+                            <span style="color: #94a3b8; font-size: 0.7rem; margin-left: 8px;">{item['duration']}</span>
+                        </div>
+                        <div style="color: #94a3b8; font-size: 0.7rem;">{item['time']}</div>
+                    </div>
+                    <div style="margin-top: 6px; color: #475569; font-size: 0.85rem;">
+                        {short_text}
+                    </div>
                 </div>
-                <div style="color: #475569; font-size: 0.7rem;">{item['time']}</div>
-            </div>
-            <div style="margin-top: 6px; color: #94a3b8; font-size: 0.85rem; max-height: 80px; overflow: hidden; text-overflow: ellipsis;">
-                {item['full_text'][:200]}{'...' if len(item['full_text']) > 200 else ''}
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
-                <button onclick="navigator.clipboard.writeText(`{safe_text}`)" style="background: none; border: 1px solid rgba(139,92,246,0.3); color: #a78bfa; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; cursor: pointer;">📋 Copy</button>
-                <a href="data:text/plain;charset=utf-8,{item['full_text'].replace('\n', '%0A').replace(' ', '%20')}" download="transcription_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt" style="background: none; border: 1px solid rgba(139,92,246,0.3); color: #a78bfa; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; text-decoration: none;">📥 Download</a>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                if st.button(f"📋 Copy", key=f"copy_{idx}", use_container_width=True):
+                    st.session_state.copy_status = "✅ Copied from history!"
+                    st.rerun()
     
     if st.button("🗑️ Clear All History", use_container_width=True):
         st.session_state.history = []
@@ -457,4 +545,4 @@ if st.session_state.history:
 # FOOTER
 # ============================================================
 st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-st.markdown('<div style="text-align: center; color: #475569; font-size: 0.6rem;">🎤 Voice to Text Pro · Powered by AssemblyAI + Mistral · Created by Nirbhay</div>', unsafe_allow_html=True)
+st.markdown('<div style="text-align: center; color: #94a3b8; font-size: 0.6rem;">🎤 Voice to Text Pro · Powered by AssemblyAI + Mistral · Created by Nirbhay</div>', unsafe_allow_html=True)

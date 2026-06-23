@@ -4,9 +4,8 @@ from datetime import datetime
 import os
 import requests
 import json
-import base64
 
-st.set_page_config(page_title="Voice to Text Pro", page_icon="🎤", layout="wide")
+st.set_page_config(page_title="Voice to Text Pro", page_icon="📝", layout="wide")
 
 # ============================================================
 # API KEYS
@@ -26,71 +25,50 @@ st.markdown("""
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
 .stApp {
-    background: linear-gradient(135deg, #f0f4ff 0%, #e8edf5 100%);
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
 }
 .block-container { padding: 2rem; max-width: 1000px; }
 
-/* Animated Gradient Header */
-@keyframes shimmer {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
-}
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-8px); }
-    100% { transform: translateY(0px); }
-}
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(15px); }
+    from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0px); }
-}
-@keyframes glowPulse {
-    0% { box-shadow: 0 0 20px rgba(124,58,237,0.15); }
-    50% { box-shadow: 0 0 40px rgba(124,58,237,0.25); }
-    100% { box-shadow: 0 0 20px rgba(124,58,237,0.15); }
 }
 
 .main-title {
-    font-size: 2.8rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #7c3aed, #4f46e5, #7c3aed);
-    background-size: 300% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1e293b;
     text-align: center;
-    animation: shimmer 6s linear infinite;
     letter-spacing: -0.02em;
 }
+.main-title span { color: #7c3aed; }
 .main-sub {
-    color: #6b7280;
+    color: #64748b;
     text-align: center;
-    font-size: 1rem;
+    font-size: 0.95rem;
     margin-bottom: 1.5rem;
     animation: fadeIn 0.8s ease;
 }
 
-/* Premium Glass Card - Light Mode */
 .glass-card {
-    background: rgba(255,255,255,0.65);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.7);
-    border-radius: 24px;
-    padding: 1.5rem;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 16px;
+    padding: 1.2rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.06);
-    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: all 0.2s ease;
 }
 .glass-card:hover {
-    box-shadow: 0 12px 48px rgba(124,58,237,0.10);
-    border-color: rgba(124,58,237,0.15);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 }
 
 .text-box {
-    background: rgba(255,255,255,0.8);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(124,58,237,0.12);
-    border-radius: 16px;
-    padding: 20px;
+    background: rgba(255,255,255,0.85);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px;
     min-height: 120px;
     color: #1e293b;
     font-size: 0.95rem;
@@ -102,57 +80,65 @@ st.markdown("""
 }
 
 .history-item {
-    background: rgba(255,255,255,0.7);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(124,58,237,0.08);
-    border-radius: 16px;
-    padding: 14px 18px;
-    margin: 10px 0;
-    transition: all 0.3s ease;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    transition: all 0.2s ease;
     animation: fadeIn 0.5s ease;
 }
 .history-item:hover {
-    border-color: rgba(124,58,237,0.3);
-    transform: translateX(4px);
-    box-shadow: 0 4px 16px rgba(124,58,237,0.08);
+    border-color: #7c3aed;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.06);
 }
 
 .history-time { color: #94a3b8; font-size: 0.7rem; }
 
 .stButton > button {
-    background: linear-gradient(135deg, #7c3aed, #4f46e5) !important;
+    background: #7c3aed !important;
     color: white !important;
     border: none !important;
-    border-radius: 50px !important;
-    font-weight: 600 !important;
-    transition: all 0.3s !important;
-    box-shadow: 0 4px 16px rgba(124,58,237,0.2) !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    font-size: 0.85rem !important;
+    padding: 8px 18px !important;
+    transition: all 0.2s !important;
+    box-shadow: none !important;
 }
 .stButton > button:hover {
-    transform: scale(1.02);
-    box-shadow: 0 8px 32px rgba(124,58,237,0.3) !important;
+    background: #6d28d9 !important;
+    transform: translateY(-1px);
+}
+
+.stButton > button[kind="secondary"] {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+}
+.stButton > button[kind="secondary"]:hover {
+    background: #e2e8f0 !important;
 }
 
 .divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(124,58,237,0.12), transparent);
-    margin: 1.5rem 0;
+    background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+    margin: 1.2rem 0;
 }
 
 .section-title {
-    color: #6b7280;
-    font-size: 0.75rem;
+    color: #94a3b8;
+    font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.6rem;
 }
 
 .stTextInput > div > div > input {
-    background: rgba(255,255,255,0.7) !important;
-    border: 1px solid rgba(124,58,237,0.12) !important;
-    border-radius: 50px !important;
-    padding: 12px 20px !important;
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 10px 16px !important;
     color: #1e293b !important;
 }
 .stTextInput > div > div > input:focus {
@@ -161,52 +147,44 @@ st.markdown("""
 }
 
 .stSelectbox > div > div > div {
-    background: rgba(255,255,255,0.7) !important;
-    border: 1px solid rgba(124,58,237,0.12) !important;
-    border-radius: 12px !important;
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
     color: #1e293b !important;
 }
 
 .stNumberInput > div > div > input {
-    background: rgba(255,255,255,0.7) !important;
-    border: 1px solid rgba(124,58,237,0.12) !important;
-    border-radius: 12px !important;
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
     color: #1e293b !important;
 }
 
 [data-testid="stFileUploader"] {
-    background: rgba(255,255,255,0.4) !important;
-    border: 2px dashed rgba(124,58,237,0.2) !important;
-    border-radius: 16px !important;
+    background: rgba(255,255,255,0.3) !important;
+    border: 2px dashed #e2e8f0 !important;
+    border-radius: 12px !important;
     padding: 1rem !important;
 }
 [data-testid="stFileUploader"]:hover { border-color: #7c3aed !important; }
 
 [data-testid="stAudioInput"] {
-    background: rgba(255,255,255,0.4) !important;
-    border: 1px solid rgba(124,58,237,0.12) !important;
-    border-radius: 16px !important;
+    background: rgba(255,255,255,0.3) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
     padding: 0.5rem !important;
 }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #e8edf5; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
 ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 10px; }
 
-/* Status messages */
 .success-status {
-    background: rgba(52,211,153,0.15);
+    background: #d1fae5;
     color: #065f46;
-    padding: 12px;
-    border-radius: 12px;
+    padding: 10px;
+    border-radius: 8px;
     border-left: 4px solid #10b981;
-}
-.error-status {
-    background: rgba(239,68,68,0.1);
-    color: #991b1b;
-    padding: 12px;
-    border-radius: 12px;
-    border-left: 4px solid #ef4444;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -222,8 +200,8 @@ if "original_text" not in st.session_state:
     st.session_state.original_text = ""
 if "translated_text" not in st.session_state:
     st.session_state.translated_text = ""
-if "copy_status" not in st.session_state:
-    st.session_state.copy_status = ""
+if "copy_msg" not in st.session_state:
+    st.session_state.copy_msg = ""
 
 # ============================================================
 # FUNCTIONS
@@ -261,32 +239,18 @@ Text:
     except:
         return "Translation failed."
 
-def copy_to_clipboard(text):
-    """Copy text to clipboard using JavaScript"""
-    return f"""
-    <script>
-        function copyText() {{
-            navigator.clipboard.writeText(`{text}`).then(function() {{
-                document.getElementById('copyStatus').innerHTML = '✅ Copied to clipboard!';
-                document.getElementById('copyStatus').style.color = '#10b981';
-            }});
-        }}
-        copyText();
-    </script>
-    """
-
 # ============================================================
 # HEADER
 # ============================================================
-st.markdown('<div class="main-title">🎤 Voice to Text Pro</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">📝 Voice to Text <span>Pro</span></div>', unsafe_allow_html=True)
 st.markdown('<div class="main-sub">Upload audio/video • Record voice • AI transcribes • Translate</div>', unsafe_allow_html=True)
 
 # ============================================================
 # COPY STATUS
 # ============================================================
-if st.session_state.copy_status:
-    st.markdown(f'<div class="success-status">{st.session_state.copy_status}</div>', unsafe_allow_html=True)
-    st.session_state.copy_status = ""
+if st.session_state.copy_msg:
+    st.markdown(f'<div class="success-status">{st.session_state.copy_msg}</div>', unsafe_allow_html=True)
+    st.session_state.copy_msg = ""
 
 # ============================================================
 # RECORD SECTION
@@ -331,7 +295,7 @@ with st.container():
                     })
                     st.success("✅ Transcription complete!")
                 else:
-                    st.error("❌ No text detected.")
+                    st.error("❌ No text detected. Please try again.")
                     
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
@@ -422,7 +386,7 @@ with st.container():
                         })
                         st.success("✅ Transcription complete!")
                     else:
-                        st.error("❌ No text detected.")
+                        st.error("❌ No text detected. Please try again.")
                         
                 except Exception as e:
                     st.error(f"❌ Error: {str(e)}")
@@ -446,7 +410,7 @@ if st.session_state.transcribed_text:
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         if st.button("📋 Copy", use_container_width=True):
-            st.session_state.copy_status = "✅ Copied to clipboard!"
+            st.session_state.copy_msg = "✅ Copied to clipboard!"
             st.rerun()
     with col2:
         if st.button("📥 Download", use_container_width=True):
@@ -468,7 +432,7 @@ if st.session_state.transcribed_text:
             st.rerun()
 
 # ============================================================
-# TRANSLATION MODERN DESIGN
+# TRANSLATION
 # ============================================================
 if st.session_state.get("show_translate", False) and st.session_state.original_text:
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
@@ -489,11 +453,11 @@ if st.session_state.get("show_translate", False) and st.session_state.original_t
             translated = translate_text(st.session_state.original_text, target_lang)
             if translated:
                 st.session_state.translated_text = translated
-                st.markdown(f'<div class="text-box" style="border-color: rgba(251,191,36,0.3);">{translated}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="text-box" style="border-color: #fbbf24;">{translated}</div>', unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
                 with col1:
                     if st.button("📋 Copy Translation", use_container_width=True):
-                        st.session_state.copy_status = "✅ Translation copied!"
+                        st.session_state.copy_msg = "✅ Translation copied!"
                         st.rerun()
                 with col2:
                     st.download_button(
@@ -504,38 +468,33 @@ if st.session_state.get("show_translate", False) and st.session_state.original_t
                     )
 
 # ============================================================
-# HISTORY WITH COPY/DOWNLOAD
+# HISTORY
 # ============================================================
 if st.session_state.history:
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📜 History</div>', unsafe_allow_html=True)
     
     for idx, item in enumerate(reversed(st.session_state.history)):
-        safe_text = item['full_text'].replace('`', '\\`').replace('"', '\\"').replace("'", "\\'").replace('\n', ' ')
         short_text = item['full_text'][:200] + ('...' if len(item['full_text']) > 200 else '')
         
-        with st.container():
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                st.markdown(f"""
-                <div class="history-item">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <span style="color: #7c3aed; font-weight: 600;">{item['mode']}</span>
-                            <span style="color: #94a3b8; font-size: 0.7rem; margin-left: 8px;">{item['duration']}</span>
-                        </div>
-                        <div style="color: #94a3b8; font-size: 0.7rem;">{item['time']}</div>
-                    </div>
-                    <div style="margin-top: 6px; color: #475569; font-size: 0.85rem;">
-                        {short_text}
-                    </div>
+        st.markdown(f"""
+        <div class="history-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="color: #7c3aed; font-weight: 600;">{item['mode']}</span>
+                    <span style="color: #94a3b8; font-size: 0.7rem; margin-left: 8px;">{item['duration']}</span>
                 </div>
-                """, unsafe_allow_html=True)
-            
-            with col2:
-                if st.button(f"📋 Copy", key=f"copy_{idx}", use_container_width=True):
-                    st.session_state.copy_status = "✅ Copied from history!"
-                    st.rerun()
+                <div style="color: #94a3b8; font-size: 0.7rem;">{item['time']}</div>
+            </div>
+            <div style="margin-top: 6px; color: #475569; font-size: 0.85rem;">
+                {short_text}
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <button onclick="navigator.clipboard.writeText(`{item['full_text'].replace('`', '\\`').replace('"', '\\"')}`)" style="background: #f1f5f9; border: none; border-radius: 6px; padding: 4px 12px; font-size: 0.7rem; cursor: pointer; color: #475569;">📋 Copy</button>
+                <a href="data:text/plain;charset=utf-8,{item['full_text'].replace('\n', '%0A').replace(' ', '%20')}" download="transcription_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt" style="background: #f1f5f9; border: none; border-radius: 6px; padding: 4px 12px; font-size: 0.7rem; text-decoration: none; color: #475569; cursor: pointer;">📥 Download</a>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     if st.button("🗑️ Clear All History", use_container_width=True):
         st.session_state.history = []
@@ -545,4 +504,4 @@ if st.session_state.history:
 # FOOTER
 # ============================================================
 st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-st.markdown('<div style="text-align: center; color: #94a3b8; font-size: 0.6rem;">🎤 Voice to Text Pro · Powered by AssemblyAI + Mistral · Created by Nirbhay</div>', unsafe_allow_html=True)
+st.markdown('<div style="text-align: center; color: #94a3b8; font-size: 0.6rem;">📝 Voice to Text Pro · Powered by AssemblyAI + Mistral · Created by Nirbhay</div>', unsafe_allow_html=True)

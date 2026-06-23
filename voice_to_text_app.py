@@ -245,7 +245,6 @@ with st.container():
     
     audio_value = st.audio_input("Click to record", key="audio_recorder")
     
-    # Compute a unique hash for the audio data to avoid re-processing
     audio_hash = None
     if audio_value is not None:
         audio_hash = hashlib.md5(audio_value.getvalue()).hexdigest()
@@ -270,7 +269,6 @@ with st.container():
                     st.session_state.transcribed_text = formatted
                     st.session_state.original_text = transcript.text
                     
-                    # Append only once
                     st.session_state.history.append({
                         "text": formatted[:500] + ("..." if len(formatted) > 500 else ""),
                         "full_text": formatted,
@@ -307,7 +305,6 @@ with st.container():
     )
 
     if uploaded_file is not None:
-        # Hash the file to avoid reprocessing same file
         file_hash = hashlib.md5(uploaded_file.getvalue()).hexdigest()
         
         file_type = uploaded_file.type
@@ -370,34 +367,13 @@ with st.container():
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================================
-# DISPLAY TRANSCRIPTION WITH COPY BUTTON
+# DISPLAY TRANSCRIPTION (NO COPY BUTTON)
 # ============================================================
 if st.session_state.transcribed_text:
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📝 Transcription</div>', unsafe_allow_html=True)
     
-    # Display text in a div with an id for copying
-    st.markdown(f"""
-    <div id="transcription_text" class="text-box">
-        {st.session_state.transcribed_text}
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Copy button using JavaScript
-    st.markdown("""
-    <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
-        <button onclick="
-            var text = document.getElementById('transcription_text').innerText;
-            navigator.clipboard.writeText(text).then(function() {
-                document.getElementById('copy_status').innerHTML = '✅ Copied!';
-                setTimeout(function() {
-                    document.getElementById('copy_status').innerHTML = '';
-                }, 3000);
-            });
-        " style="background: #7c3aed; color: white; border: none; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-weight: 500;">📋 Copy</button>
-        <span id="copy_status" style="color: #10b981; font-weight: 500;"></span>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f'<div class="text-box">{st.session_state.transcribed_text}</div>', unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -458,7 +434,7 @@ if st.session_state.get("show_translate", False) and st.session_state.transcribe
                     )
 
 # ============================================================
-# HISTORY
+# HISTORY (NO COPY BUTTONS)
 # ============================================================
 if st.session_state.history:
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
@@ -476,20 +452,16 @@ if st.session_state.history:
             </div>
             """, unsafe_allow_html=True)
             
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button(f"📋 Copy", key=f"copy_hist_{idx}", use_container_width=True):
-                    st.session_state.copy_msg = "✅ Copied from history!"
-                    st.rerun()
-            with col2:
-                st.download_button(
-                    label="📥 Download",
-                    data=item.get('full_text', item['text']),
-                    file_name=f"transcription_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                    mime="text/plain",
-                    use_container_width=True,
-                    key=f"download_hist_{idx}"
-                )
+            # Only download button in history
+            st.download_button(
+                label="📥 Download",
+                data=item.get('full_text', item['text']),
+                file_name=f"transcription_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                mime="text/plain",
+                use_container_width=True,
+                key=f"download_hist_{idx}"
+            )
+            st.markdown("<hr style='margin: 0.5rem 0; border-color: #e2e8f0;'>", unsafe_allow_html=True)
     
     if st.button("🗑️ Clear All History", use_container_width=True):
         st.session_state.history = []

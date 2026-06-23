@@ -47,6 +47,7 @@ st.markdown("""
 .block-container {
     padding: 2.5rem 2rem 5rem 2rem !important;
     max-width: 820px !important;
+    margin: 0 auto !important;
     position: relative;
     z-index: 1;
 }
@@ -110,9 +111,11 @@ st.markdown("""
     font-size:0.68rem; font-weight:500; color:#94a3b8;
 }
 
+/* ─── CENTER WAVE ──────────────────────────────────────── */
 .wave-container {
     display:flex; justify-content:center; align-items:center;
-    gap:4px; height:60px; margin:1.5rem 0;
+    gap:4px; height:60px; margin:1.5rem auto;
+    max-width:300px;
 }
 .wave-bar {
     width:4px; height:12px; border-radius:4px;
@@ -139,59 +142,110 @@ st.markdown("""
 }
 .wave-status.active { color:#a78bfa; font-weight:600; }
 
+/* ─── TRANSPARENT COLORFUL INPUT PANELS ────────────────── */
 .input-panel {
-    background:rgba(255,255,255,0.02);
-    border:1px solid rgba(255,255,255,0.06);
-    border-radius:18px; padding:1.8rem 1.8rem 1.4rem;
-    margin-bottom:1.2rem; animation:fadeUp 0.5s ease both;
-    transition:border-color 0.25s;
+    background: rgba(139,92,246,0.04);
+    backdrop-filter:blur(8px);
+    border:1px solid rgba(139,92,246,0.15);
+    border-radius:18px;
+    padding:1.8rem 1.8rem 1.4rem;
+    margin-bottom:1.2rem;
+    animation:fadeUp 0.5s ease both;
+    transition:all 0.3s ease;
 }
-.input-panel:hover { border-color:rgba(139,92,246,0.18); }
+.input-panel:hover {
+    border-color:rgba(139,92,246,0.35);
+    background: rgba(139,92,246,0.07);
+}
+
 .panel-title {
-    font-size:0.68rem; font-weight:700; color:#cbd5e1;
+    font-size:0.68rem; font-weight:700; color:#a78bfa;
     text-transform:uppercase; letter-spacing:2px;
     margin-bottom:1.1rem;
     display:flex; align-items:center; gap:8px;
 }
 
+.panel-title svg { flex-shrink:0; }
+
+/* ─── COLORFUL DURATION BOX ────────────────────────────── */
 .duration-box {
-    background:rgba(255,255,255,0.03);
-    border:1px solid rgba(255,255,255,0.06);
+    background: rgba(6,182,212,0.06);
+    border:1px solid rgba(6,182,212,0.15);
     border-radius:12px;
     padding:0.8rem 1.2rem;
     margin:0.8rem 0;
 }
+.duration-box:hover {
+    border-color:rgba(6,182,212,0.3);
+    background: rgba(6,182,212,0.1);
+}
 .duration-label {
-    color:#94a3b8; font-size:0.7rem; font-weight:500;
+    color:#67e8f9; font-size:0.7rem; font-weight:500;
     display:flex; align-items:center; gap:6px;
     margin-bottom:0.3rem;
 }
+
+/* ─── COLORFUL RECORD BOX ──────────────────────────────── */
+.record-box {
+    background: rgba(244,63,94,0.05);
+    border:1px solid rgba(244,63,94,0.12);
+    border-radius:12px;
+    padding:0.5rem;
+}
+.record-box:hover {
+    border-color:rgba(244,63,94,0.25);
+    background: rgba(244,63,94,0.08);
+}
+
+/* ─── COLORFUL UPLOAD BOX ──────────────────────────────── */
+.upload-box {
+    background: rgba(52,211,153,0.05);
+    border:1px solid rgba(52,211,153,0.12);
+    border-radius:12px;
+    padding:0.5rem;
+}
+.upload-box:hover {
+    border-color:rgba(52,211,153,0.25);
+    background: rgba(52,211,153,0.08);
+}
+
+/* ─── COLORFUL URL BOX ──────────────────────────────────── */
+.url-box {
+    background: rgba(251,191,36,0.05);
+    border:1px solid rgba(251,191,36,0.12);
+    border-radius:12px;
+    padding:0.5rem;
+}
+.url-box:hover {
+    border-color:rgba(251,191,36,0.25);
+    background: rgba(251,191,36,0.08);
+}
+
+/* ─── SLIDER ────────────────────────────────────────────── */
 [data-testid="stSlider"] { padding:0.3rem 0; }
 [data-testid="stSlider"] .stSliderLabel { color:#94a3b8 !important; font-size:0.7rem !important; }
-[data-testid="stSlider"] .stSliderValue { color:#a78bfa !important; font-weight:600 !important; }
+[data-testid="stSlider"] .stSliderValue { color:#67e8f9 !important; font-weight:600 !important; }
 
-.rec-hint {
-    color:#64748b; font-size:0.75rem; text-align:center;
-    padding:0.4rem 0 0.8rem; letter-spacing:0.02em;
-}
-
+/* ─── FILE UPLOADER ─────────────────────────────────────── */
 [data-testid="stFileUploader"] {
-    background:rgba(255,255,255,0.015) !important;
-    border:1.5px dashed rgba(139,92,246,0.15) !important;
+    background:rgba(139,92,246,0.04) !important;
+    border:1.5px dashed rgba(139,92,246,0.2) !important;
     border-radius:12px !important;
-    transition:border-color 0.2s !important;
+    transition:all 0.3s !important;
 }
 [data-testid="stFileUploader"]:hover {
-    border-color:rgba(139,92,246,0.35) !important;
-    background:rgba(139,92,246,0.03) !important;
+    border-color:rgba(139,92,246,0.4) !important;
+    background:rgba(139,92,246,0.08) !important;
 }
 [data-testid="stFileUploader"] span { color:#94a3b8 !important; }
 
+/* ─── VIDEO/AUDIO ───────────────────────────────────────── */
 [data-testid="stVideo"],[data-testid="stAudio"] {
     width:100% !important; border-radius:12px !important;
     overflow:hidden !important; margin-bottom:0.5rem !important;
 }
 
+/* ─── TRANSCRIPTION BOX ─────────────────────────────────── */
 .tr-box {
     background:rgba(255,255,255,0.02);
     border:1px solid rgba(255,255,255,0.06);
@@ -205,6 +259,7 @@ st.markdown("""
 }
 .tr-box-gold { border-color:rgba(251,191,36,0.15) !important; }
 
+/* ─── ACTION ROW ────────────────────────────────────────── */
 .action-row {
     display:grid; grid-template-columns:1fr 1fr 1fr;
     gap:10px; margin-top:12px;
@@ -220,6 +275,7 @@ st.markdown("""
     font-weight:600 !important;
 }
 
+/* ─── SECTION LABEL ──────────────────────────────────────── */
 .tr-section {
     display:flex; align-items:center; gap:9px;
     color:#64748b; font-size:0.64rem; font-weight:700;
@@ -231,6 +287,7 @@ st.markdown("""
     background:rgba(255,255,255,0.05);
 }
 
+/* ─── HISTORY ────────────────────────────────────────────── */
 .hist-card {
     display:flex; align-items:stretch;
     background:rgba(255,255,255,0.02);
@@ -279,6 +336,7 @@ st.markdown("""
     background:rgba(139,92,246,0.14) !important;
 }
 
+/* ─── BUTTONS ────────────────────────────────────────────── */
 .stButton > button {
     background:linear-gradient(135deg,#7c3aed,#4f46e5) !important;
     color:#fff !important; border:none !important;
@@ -442,23 +500,25 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ─── WAVE ANIMATION ──────────────────────────────────────────
+# ─── WAVE ANIMATION (CENTERED) ──────────────────────────────
 st.markdown("""
-<div class="wave-container" id="waveContainer">
-    <div class="wave-bar"></div>
-    <div class="wave-bar"></div>
-    <div class="wave-bar"></div>
-    <div class="wave-bar"></div>
-    <div class="wave-bar"></div>
-    <div class="wave-bar"></div>
-    <div class="wave-bar"></div>
-    <div class="wave-bar"></div>
-    <div class="wave-bar"></div>
-    <div class="wave-bar"></div>
-    <div class="wave-bar"></div>
-    <div class="wave-bar"></div>
+<div style="display:flex; flex-direction:column; align-items:center;">
+    <div class="wave-container" id="waveContainer">
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+    </div>
+    <div class="wave-status" id="waveStatus">🎤 Ready to transcribe</div>
 </div>
-<div class="wave-status" id="waveStatus">🎤 Ready to transcribe</div>
 """, unsafe_allow_html=True)
 
 # ─── TAB SWITCHER ────────────────────────────────────────────
@@ -495,7 +555,10 @@ if st.session_state.input_mode == "record":
     """, unsafe_allow_html=True)
 
     st.markdown('<p class="rec-hint">Press the mic icon below to start — auto-transcribes on stop</p>', unsafe_allow_html=True)
+    
+    st.markdown('<div class="record-box">', unsafe_allow_html=True)
     audio_value = st.audio_input("rec", key="audio_recorder", label_visibility="collapsed")
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Duration slider appears when recording
     st.markdown('<div class="duration-box">', unsafe_allow_html=True)
@@ -518,6 +581,7 @@ if st.session_state.input_mode == "record":
                 ok = do_transcribe(tmp, True, "Conversation", duration_minutes)
                 if ok:
                     st.markdown('<div class="tr-ok">✓ &nbsp;Transcription complete!</div>', unsafe_allow_html=True)
+                    st.markdown('<script>document.getElementById("waveStatus").innerHTML = "✅ Transcription complete!"</script>', unsafe_allow_html=True)
                 else:
                     st.markdown('<div class="tr-err">⚠ No speech detected.</div>', unsafe_allow_html=True)
             except Exception as e:
@@ -545,7 +609,9 @@ elif st.session_state.input_mode == "upload":
 
     st.caption("MP3 · WAV · M4A · FLAC · WebM · MP4 · MOV · AVI · MKV (up to 200MB)")
 
+    st.markdown('<div class="upload-box">', unsafe_allow_html=True)
     uploaded_file = st.file_uploader("u", type=["mp3","wav","m4a","flac","webm","mp4","mov","avi","mkv"], label_visibility="collapsed")
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if uploaded_file:
         st.session_state.file_uploaded = True
@@ -612,9 +678,11 @@ else:
       </div>
     """, unsafe_allow_html=True)
 
-    st.caption("Paste any direct audio/video URL or Google Drive share link")
+    st.caption("Paste any direct audio/video URL or Google Drive share link (file must be publicly accessible)")
 
+    st.markdown('<div class="url-box">', unsafe_allow_html=True)
     url_input = st.text_input("File URL", placeholder="https://drive.google.com/file/d/.../view or https://example.com/file.mp3", label_visibility="collapsed")
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Duration slider for URL (shown when URL is entered)
     if url_input:

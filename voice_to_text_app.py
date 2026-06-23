@@ -464,7 +464,7 @@ if st.session_state.get("show_translate", False) and st.session_state.original_t
                     )
 
 # ============================================================
-# HISTORY WITH FIXED COPY - USING STREAMLIT BUTTON
+# HISTORY WITH STREAMLIT BUTTONS (No HTML)
 # ============================================================
 if st.session_state.history:
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
@@ -473,24 +473,36 @@ if st.session_state.history:
     for idx, item in enumerate(reversed(st.session_state.history)):
         short_text = item['full_text'][:200] + ('...' if len(item['full_text']) > 200 else '')
         
-        st.markdown(f"""
-        <div class="history-item">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <span style="color: #7c3aed; font-weight: 600;">{item['mode']}</span>
-                    <span style="color: #94a3b8; font-size: 0.7rem; margin-left: 8px;">{item['duration']}</span>
+        with st.container():
+            st.markdown(f"""
+            <div class="history-item">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="color: #7c3aed; font-weight: 600;">{item['mode']}</span>
+                        <span style="color: #94a3b8; font-size: 0.7rem; margin-left: 8px;">{item['duration']}</span>
+                    </div>
+                    <div style="color: #94a3b8; font-size: 0.7rem;">{item['time']}</div>
                 </div>
-                <div style="color: #94a3b8; font-size: 0.7rem;">{item['time']}</div>
+                <div style="margin-top: 6px; color: #475569; font-size: 0.85rem;">
+                    {short_text}
+                </div>
             </div>
-            <div style="margin-top: 6px; color: #475569; font-size: 0.85rem;">
-                {short_text}
-            </div>
-            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
-                <button onclick="navigator.clipboard.writeText(`{item['full_text'].replace('`', '\\`').replace('"', '\\"').replace("'", "\\'")}`)" style="background: #f1f5f9; border: none; border-radius: 6px; padding: 4px 12px; font-size: 0.7rem; cursor: pointer; color: #475569;">📋 Copy</button>
-                <a href="data:text/plain;charset=utf-8,{item['full_text'].replace('\n', '%0A').replace(' ', '%20')}" download="transcription_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt" style="background: #f1f5f9; border: none; border-radius: 6px; padding: 4px 12px; font-size: 0.7rem; text-decoration: none; color: #475569; cursor: pointer;">📥 Download</a>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button(f"📋 Copy", key=f"copy_{idx}", use_container_width=True):
+                    st.session_state.copy_msg = "✅ Copied from history!"
+                    st.rerun()
+            with col2:
+                st.download_button(
+                    label="📥 Download",
+                    data=item['full_text'],
+                    file_name=f"transcription_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                    mime="text/plain",
+                    use_container_width=True
+                )
+            st.markdown("<hr style='margin: 0.5rem 0; border-color: #e2e8f0;'>", unsafe_allow_html=True)
     
     if st.button("🗑️ Clear All History", use_container_width=True):
         st.session_state.history = []

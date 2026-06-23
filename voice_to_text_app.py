@@ -387,7 +387,7 @@ if st.session_state.transcribed_text:
 # ============================================================
 # TRANSLATION
 # ============================================================
-if st.session_state.get("show_translate", False) and st.session_state.original_text:
+if st.session_state.get("show_translate", False) and st.session_state.transcribed_text:
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-title">🌍 Translate</div>', unsafe_allow_html=True)
     

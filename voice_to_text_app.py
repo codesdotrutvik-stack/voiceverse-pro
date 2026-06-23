@@ -378,9 +378,9 @@ def translate_text(text, target_lang):
     url = "https://api.mistral.ai/v1/chat/completions"
     headers = {"Authorization":f"Bearer {MISTRAL_KEY}","Content-Type":"application/json"}
     prompt = f"Translate to {lang_map.get(target_lang, 'Hindi')}. Only the translation.\n\n{text}"
-    data = {"model":"mistral-small-latest","messages":[{"role":"user","content":prompt}],"max_tokens":2000}
+    data = {"model":"mistral-small-latest","messages":[{"role":"user","content":prompt}],"max_tokens":4000}
     try:
-        r = requests.post(url,json=data,headers=headers,timeout=30)
+        r = requests.post(url,json=data,headers=headers,timeout=60)
         return r.json()["choices"][0]["message"]["content"]
     except:
         return "Translation failed."

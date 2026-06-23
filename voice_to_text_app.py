@@ -60,7 +60,6 @@ st.markdown("""
 }
 .glass-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
 
-/* Full Width Uploader */
 [data-testid="stFileUploader"] {
     width: 100% !important;
     background: rgba(255,255,255,0.3) !important;
@@ -70,7 +69,6 @@ st.markdown("""
 }
 [data-testid="stFileUploader"]:hover { border-color: #7c3aed !important; }
 
-/* Full Width Video/Audio */
 [data-testid="stVideo"], [data-testid="stAudio"] {
     width: 100% !important;
 }
@@ -156,18 +154,6 @@ st.markdown("""
     border-radius: 8px;
     border-left: 4px solid #10b981;
 }
-
-/* Speaker label styling */
-.speaker-label {
-    color: #7c3aed;
-    font-weight: 600;
-    display: block;
-    margin-top: 8px;
-    font-size: 0.85rem;
-}
-.speaker-text {
-    margin-left: 8px;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -222,7 +208,6 @@ Text:
         return "Translation failed."
 
 def format_transcript(transcript, conversation_mode):
-    """Format transcript based on mode"""
     if conversation_mode and transcript.utterances:
         formatted = ""
         for utterance in transcript.utterances:
@@ -230,7 +215,6 @@ def format_transcript(transcript, conversation_mode):
             formatted += f"**{speaker}:** {utterance.text}\n\n"
         return formatted
     else:
-        # Return plain text without speaker labels
         return transcript.text
 
 # ============================================================
@@ -311,7 +295,6 @@ with st.container():
     )
 
     if uploaded_file is not None:
-        # File preview - Full width
         file_type = uploaded_file.type
         if "video" in file_type or uploaded_file.name.lower().endswith((".mp4", ".mov", ".avi", ".mkv")):
             st.video(uploaded_file)
@@ -321,7 +304,6 @@ with st.container():
         file_size = len(uploaded_file.getvalue()) / (1024 * 1024)
         st.caption(f"📁 {uploaded_file.name} | {file_size:.2f} MB")
         
-        # Speaker toggle below file
         conversation_mode = st.checkbox("💬 Conversation Mode (Speaker Labels)", value=True)
 
         if st.button("🎯 Transcribe", type="primary", use_container_width=True):
@@ -379,25 +361,26 @@ if st.session_state.transcribed_text:
     
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        if st.button("📋 Copy", use_container_width=True):
+        if st.button("📋 Copy", key="copy_transcription", use_container_width=True):
             st.session_state.copy_msg = "✅ Copied to clipboard!"
             st.rerun()
     with col2:
-        if st.button("📥 Download", use_container_width=True):
+        if st.button("📥 Download", key="download_transcription", use_container_width=True):
             st.download_button(
                 label="📥 Download",
                 data=st.session_state.transcribed_text,
                 file_name=f"transcription_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                mime="text/plain"
+                mime="text/plain",
+                key="download_btn_main"
             )
     with col3:
-        if st.button("🗑️ Clear", use_container_width=True):
+        if st.button("🗑️ Clear", key="clear_transcription", use_container_width=True):
             st.session_state.transcribed_text = ""
             st.session_state.original_text = ""
             st.session_state.translated_text = ""
             st.rerun()
     with col4:
-        if st.button("🔁 Translate", use_container_width=True):
+        if st.button("🔁 Translate", key="translate_btn", use_container_width=True):
             st.session_state.show_translate = not st.session_state.get("show_translate", False)
             st.rerun()
 
@@ -426,7 +409,7 @@ if st.session_state.get("show_translate", False) and st.session_state.original_t
                 st.markdown(f'<div class="text-box" style="border-color: #fbbf24;">{translated}</div>', unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button("📋 Copy Translation", use_container_width=True):
+                    if st.button("📋 Copy Translation", key="copy_translation", use_container_width=True):
                         st.session_state.copy_msg = "✅ Translation copied!"
                         st.rerun()
                 with col2:
@@ -434,7 +417,8 @@ if st.session_state.get("show_translate", False) and st.session_state.original_t
                         label="📥 Download Translation",
                         data=translated,
                         file_name=f"translation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                        mime="text/plain"
+                        mime="text/plain",
+                        key="download_translation_btn"
                     )
 
 # ============================================================
@@ -465,7 +449,7 @@ if st.session_state.history:
             
             col1, col2 = st.columns(2)
             with col1:
-                if st.button(f"📋 Copy", key=f"copy_{idx}", use_container_width=True):
+                if st.button(f"📋 Copy", key=f"copy_hist_{idx}", use_container_width=True):
                     st.session_state.copy_msg = "✅ Copied from history!"
                     st.rerun()
             with col2:
@@ -474,7 +458,8 @@ if st.session_state.history:
                     data=item['full_text'],
                     file_name=f"transcription_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
                     mime="text/plain",
-                    use_container_width=True
+                    use_container_width=True,
+                    key=f"download_hist_{idx}"
                 )
             st.markdown("<hr style='margin: 0.5rem 0; border-color: #e2e8f0;'>", unsafe_allow_html=True)
     

@@ -142,7 +142,7 @@ st.markdown("""
     backdrop-filter:blur(8px);
     border:1px solid rgba(139,92,246,0.15);
     border-radius:18px;
-    padding:1.8rem 1.8rem 1.4rem;
+    padding:15px;
     margin-bottom:1.2rem;
     animation:fadeUp 0.5s ease both;
     transition:all 0.3s ease;
@@ -157,6 +157,7 @@ st.markdown("""
     text-transform:uppercase; letter-spacing:2px;
     margin-bottom:1.1rem;
     display:flex; align-items:center; gap:8px;
+    justify-content: center;
 }
 .panel-title svg { flex-shrink:0; }
 

@@ -170,6 +170,7 @@ st.markdown("""
     border-radius:12px;
     padding:0.8rem 1.2rem;
     margin:0.8rem 0;
+            display : none;
 }
 .duration-box:hover {
     border-color:rgba(6,182,212,0.3);
@@ -186,6 +187,7 @@ st.markdown("""
     border:1px solid rgba(244,63,94,0.12);
     border-radius:12px;
     padding:0.5rem;
+            display : none;
 }
 .record-box:hover {
     border-color:rgba(244,63,94,0.25);
@@ -197,6 +199,7 @@ st.markdown("""
     border:1px solid rgba(52,211,153,0.12);
     border-radius:12px;
     padding:0.5rem;
+            display : none;
 }
 .upload-box:hover {
     border-color:rgba(52,211,153,0.25);
@@ -208,6 +211,7 @@ st.markdown("""
     border:1px solid rgba(251,191,36,0.12);
     border-radius:12px;
     padding:0.5rem;
+            display : none;
 }
 .url-box:hover {
     border-color:rgba(251,191,36,0.25);

@@ -24,9 +24,7 @@ st.markdown("""
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
-.stApp {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-}
+.stApp { background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%); }
 .block-container { padding: 2rem; max-width: 1000px; }
 
 @keyframes fadeIn {
@@ -60,9 +58,7 @@ st.markdown("""
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     transition: all 0.2s ease;
 }
-.glass-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-}
+.glass-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
 
 .text-box {
     background: rgba(255,255,255,0.85);
@@ -468,7 +464,7 @@ if st.session_state.get("show_translate", False) and st.session_state.original_t
                     )
 
 # ============================================================
-# HISTORY WITH FIXED COPY/DOWNLOAD
+# HISTORY WITH FIXED COPY - USING STREAMLIT BUTTON
 # ============================================================
 if st.session_state.history:
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
@@ -476,7 +472,6 @@ if st.session_state.history:
     
     for idx, item in enumerate(reversed(st.session_state.history)):
         short_text = item['full_text'][:200] + ('...' if len(item['full_text']) > 200 else '')
-        safe_text = item['full_text'].replace('`', '\\`').replace('"', '\\"').replace("'", "\\'")
         
         st.markdown(f"""
         <div class="history-item">
@@ -490,8 +485,8 @@ if st.session_state.history:
             <div style="margin-top: 6px; color: #475569; font-size: 0.85rem;">
                 {short_text}
             </div>
-            <div style="display: flex; gap: 8px; margin-top: 10px;">
-                <button onclick="navigator.clipboard.writeText(`{safe_text}`)" style="background: #f1f5f9; border: none; border-radius: 6px; padding: 4px 12px; font-size: 0.7rem; cursor: pointer; color: #475569;">📋 Copy</button>
+            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+                <button onclick="navigator.clipboard.writeText(`{item['full_text'].replace('`', '\\`').replace('"', '\\"').replace("'", "\\'")}`)" style="background: #f1f5f9; border: none; border-radius: 6px; padding: 4px 12px; font-size: 0.7rem; cursor: pointer; color: #475569;">📋 Copy</button>
                 <a href="data:text/plain;charset=utf-8,{item['full_text'].replace('\n', '%0A').replace(' ', '%20')}" download="transcription_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt" style="background: #f1f5f9; border: none; border-radius: 6px; padding: 4px 12px; font-size: 0.7rem; text-decoration: none; color: #475569; cursor: pointer;">📥 Download</a>
             </div>
         </div>

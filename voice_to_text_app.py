@@ -103,6 +103,7 @@ st.markdown("""
 }
 
 .history-time { color: #94a3b8; font-size: 0.7rem; }
+.history-text { color: #475569; font-size: 0.85rem; margin-top: 4px; }
 
 .stButton > button {
     background: #7c3aed !important;
@@ -258,12 +259,11 @@ with st.container():
                     st.session_state.transcribed_text = formatted
                     st.session_state.original_text = transcript.text
                     
+                    # Store only clean data in history
                     st.session_state.history.append({
-                        "full_text": formatted,
-                        "plain_text": transcript.text,
+                        "text": formatted,
                         "time": datetime.now().strftime("%I:%M %p, %d %b"),
-                        "mode": "Conversation",
-                        "duration": "Recorded"
+                        "mode": "Conversation"
                     })
                     st.success("✅ Transcription complete!")
                 else:
@@ -330,11 +330,9 @@ with st.container():
                         
                         st.session_state.translated_text = ""
                         st.session_state.history.append({
-                            "full_text": formatted,
-                            "plain_text": transcript.text,
+                            "text": formatted,
                             "time": datetime.now().strftime("%I:%M %p, %d %b"),
-                            "mode": "Conversation" if conversation_mode else "Standard",
-                            "duration": "Full"
+                            "mode": "Conversation" if conversation_mode else "Standard"
                         })
                         st.success("✅ Transcription complete!")
                     else:
@@ -422,14 +420,14 @@ if st.session_state.get("show_translate", False) and st.session_state.transcribe
                     )
 
 # ============================================================
-# HISTORY
+# HISTORY - CLEAN VERSION
 # ============================================================
 if st.session_state.history:
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📜 History</div>', unsafe_allow_html=True)
     
     for idx, item in enumerate(reversed(st.session_state.history)):
-        short_text = item['full_text'][:200] + ('...' if len(item['full_text']) > 200 else '')
+        short_text = item['text'][:200] + ('...' if len(item['text']) > 200 else '')
         
         with st.container():
             st.markdown(f"""
@@ -437,31 +435,18 @@ if st.session_state.history:
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <span style="color: #7c3aed; font-weight: 600;">{item['mode']}</span>
-                        <span style="color: #94a3b8; font-size: 0.7rem; margin-left: 8px;">{item['duration']}</span>
                     </div>
                     <div style="color: #94a3b8; font-size: 0.7rem;">{item['time']}</div>
                 </div>
-                <div style="margin-top: 6px; color: #475569; font-size: 0.85rem;">
+                <div class="history-text">
                     {short_text}
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <button onclick="navigator.clipboard.writeText(`{item['text'].replace('`', '\\`').replace('"', '\\"').replace("'", "\\'")}`)" style="background: #f1f5f9; border: none; border-radius: 6px; padding: 4px 12px; font-size: 0.7rem; cursor: pointer; color: #475569;">📋 Copy</button>
+                    <a href="data:text/plain;charset=utf-8,{item['text'].replace('\n', '%0A').replace(' ', '%20')}" download="transcription_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt" style="background: #f1f5f9; border: none; border-radius: 6px; padding: 4px 12px; font-size: 0.7rem; text-decoration: none; color: #475569; cursor: pointer;">📥 Download</a>
                 </div>
             </div>
             """, unsafe_allow_html=True)
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button(f"📋 Copy", key=f"copy_hist_{idx}", use_container_width=True):
-                    st.session_state.copy_msg = "✅ Copied from history!"
-                    st.rerun()
-            with col2:
-                st.download_button(
-                    label="📥 Download",
-                    data=item['full_text'],
-                    file_name=f"transcription_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                    mime="text/plain",
-                    use_container_width=True,
-                    key=f"download_hist_{idx}"
-                )
-            st.markdown("<hr style='margin: 0.5rem 0; border-color: #e2e8f0;'>", unsafe_allow_html=True)
     
     if st.button("🗑️ Clear All History", use_container_width=True):
         st.session_state.history = []

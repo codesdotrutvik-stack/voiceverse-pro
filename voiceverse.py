@@ -511,14 +511,14 @@ div[data-testid="stButton"] button:hover {
 }
 /* New Conversation button - Green */
 div[data-testid="stButton"] button[kind="primary"] {
-    background: linear-gradient(135deg, #10B981, #059669) !important;
-    border: 1px solid rgba(16,185,129,0.3) !important;
+     background: linear-gradient(135deg, #4F46E5, #4338CA) !important;
+    border: 1px solid rgba(79,70,229,0.3) !important;
     color: #FFFFFF !important;
 }
 div[data-testid="stButton"] button[kind="primary"]:hover {
-    background: linear-gradient(135deg, #059669, #047857) !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 6px 20px rgba(16,185,129,0.3) !important;
+    background: linear-gradient(135deg, #4338CA, #3730A3) !important;
+    box-shadow: 0 6px 20px rgba(79,70,229,0.3) !important;
 }
 div[data-testid="stDownloadButton"] button {
     background: rgba(52,211,153,0.06) !important;

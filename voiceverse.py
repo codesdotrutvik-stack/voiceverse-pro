@@ -491,7 +491,7 @@ st.markdown("""
 .chat-messages::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.2); border-radius: 999px; }
 
 /* Fade masks */
-.chat-fade-top    { position: absolute; top: 53px; left: 0; right: 0; height: 48px; background: linear-gradient(to bottom, rgba(8,12,28,0.92), transparent); pointer-events: none; z-index: 2; }
+.chat-fade-top    { position: absolute; top: 46px; left: 0; right: 0; height: 48px; background: linear-gradient(to bottom, rgba(8,12,28,0.92), transparent); pointer-events: none; z-index: 2; }
 .chat-fade-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 48px; background: linear-gradient(to top, rgba(8,12,28,0.92), transparent); pointer-events: none; z-index: 2; }
 
 /* Empty state */

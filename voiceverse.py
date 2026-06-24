@@ -309,7 +309,7 @@ st.markdown("""
     overflow: hidden;
 }
 .vv-logo-ring::after {
-    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 0;
     background: linear-gradient(90deg, #4F46E5, #A855F7, #EC4899);
 }
 @keyframes logo-pulse {

@@ -254,6 +254,7 @@ st.markdown("""
 [data-testid="stSidebar"] span,
 [data-testid="stSidebar"] div {
     color: #8892A4 !important;
+            margin-bottom: 2px;
 }
 
 /* Selectbox */

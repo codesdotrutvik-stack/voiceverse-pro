@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+temp_voice_input.wav
+voiceverse_history.json
+venv/
+.env
+.streamlit/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

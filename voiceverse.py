@@ -257,6 +257,9 @@ st.markdown("""
 }
 
 /* Selectbox */
+[data-testid="stSidebar"] [data-testid="stSelectbox"] {
+    padding: 0 1.4rem !important;
+}
 [data-testid="stSidebar"] [data-testid="stSelectbox"] label {
     color: #8892A4 !important;
     font-size: 0.75rem !important;
@@ -282,7 +285,10 @@ st.markdown("""
     margin: 0 !important;
 }
 
-/* Sidebar history buttons */
+/* Sidebar history buttons — margin fix so they don't touch edges */
+[data-testid="stSidebar"] [data-testid="stButton"] {
+    padding: 0 1.4rem !important;
+}
 [data-testid="stSidebar"] [data-testid="stButton"] button {
     background: rgba(15, 21, 45, 0.7) !important;
     border: 1px solid rgba(99,102,241,0.14) !important;
@@ -491,7 +497,7 @@ st.markdown("""
 .chat-messages::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.2); border-radius: 999px; }
 
 /* Fade masks */
-.chat-fade-top    { position: absolute; top: 46px; left: 0; right: 0; height: 48px; background: linear-gradient(to bottom, rgba(8,12,28,0.92), transparent); pointer-events: none; z-index: 2; }
+.chat-fade-top    { position: absolute; top: 53px; left: 0; right: 0; height: 48px; background: linear-gradient(to bottom, rgba(8,12,28,0.92), transparent); pointer-events: none; z-index: 2; }
 .chat-fade-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 48px; background: linear-gradient(to top, rgba(8,12,28,0.92), transparent); pointer-events: none; z-index: 2; }
 
 /* Empty state */
@@ -862,31 +868,29 @@ if st.session_state.conversation:
     col1, col2, col3 = st.columns([1,1,1])
     with col1:
         if st.button("🗑️ Clear", use_container_width=True):
-            st.session_state.conversation       = []
-            st.session_state.chat_messages      = []
-            st.session_state.current_user_text  = ""
-            st.session_state.current_ai_text    = ""
-            st.session_state.last_processed_audio = None
-            st.session_state.pending_audio_bytes  = None
+            # Full wipe — nothing should survive into the blank state
+            for _k in ["conversation","chat_messages","current_user_text",
+                       "current_ai_text","last_processed_audio","pending_audio_bytes"]:
+                if _k in st.session_state:
+                    del st.session_state[_k]
             save_history([])
             st.rerun()
     with col2:
         if st.button("✨ New Chat", use_container_width=True, type="primary"):
-            if st.session_state.conversation:
+            if st.session_state.get("conversation"):
                 st.session_state.all_conversations.append({
                     "timestamp":    datetime.now().strftime("%I:%M %p, %d %b"),
                     "conversation": st.session_state.conversation.copy(),
                     "messages":     st.session_state.chat_messages.copy()
                 })
                 save_saved_conversations(st.session_state.all_conversations)
-                st.session_state.conversation       = []
-                st.session_state.chat_messages      = []
-                st.session_state.current_user_text  = ""
-                st.session_state.current_ai_text    = ""
-                st.session_state.last_processed_audio = None
-                st.session_state.pending_audio_bytes  = None
-                save_history([])
-                st.rerun()
+            # Delete all transient keys so init block re-creates them clean
+            for _k in ["conversation","chat_messages","current_user_text",
+                       "current_ai_text","last_processed_audio","pending_audio_bytes"]:
+                if _k in st.session_state:
+                    del st.session_state[_k]
+            save_history([])
+            st.rerun()
     with col3:
         if st.session_state.all_conversations or st.session_state.conversation:
             all_text = []
@@ -1014,14 +1018,19 @@ with st.sidebar:
             real_idx  = len(st.session_state.all_conversations) - 1 - idx
             ts        = conv.get("timestamp", "")
             msg_count = len(conv.get("conversation", []))
+            # Padding wrapper so buttons don't touch sidebar edges
+            st.markdown('<div style="padding:0 1.6rem 0;">', unsafe_allow_html=True)
             if st.button(f"💬  {ts}  ·  {msg_count} msgs", key=f"conv_{real_idx}", use_container_width=True):
-                st.session_state.conversation = conv.get("conversation", [])
+                # Load history but clear transient state so AI starts fresh
+                st.session_state.conversation  = conv.get("conversation", [])
                 st.session_state.chat_messages = conv.get("messages", [])
-                if st.session_state.conversation:
-                    last = st.session_state.conversation[-1]
-                    st.session_state.current_user_text = last.get("user", "")
-                    st.session_state.current_ai_text   = last.get("ai", "")
+                # Don't pre-fill current_user/ai so chat just shows history cleanly
+                st.session_state.current_user_text    = ""
+                st.session_state.current_ai_text      = ""
+                st.session_state.last_processed_audio = None
+                st.session_state.pending_audio_bytes  = None
                 st.rerun()
+            st.markdown('</div><div style="height:4px;"></div>', unsafe_allow_html=True)
     else:
         st.markdown("""
         <div style="padding:0 1.6rem 1rem;">

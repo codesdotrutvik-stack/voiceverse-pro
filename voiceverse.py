@@ -57,10 +57,8 @@ def detect_language(text):
         if 0x0900 <= cp <= 0x097F: return "hi"
         if 0x0600 <= cp <= 0x06FF: return "ar"
         if 0x0980 <= cp <= 0x09FF: return "bn"
-        # Portuguese detection (Latin range with accent)
         if 0x00C0 <= cp <= 0x00FF: return "pt"
     
-    # Check for Portuguese words (common)
     portuguese_words = ["você", "obrigado", "por favor", "bom dia", "tudo bem", "como", "está", "plan", "today"]
     lower_text = text.lower()
     for word in portuguese_words:
@@ -69,9 +67,6 @@ def detect_language(text):
     return "en"
 
 def get_ai_response(text, chat_history=None, callback=None):
-    """
-    Get AI response with strict language enforcement.
-    """
     try:
         url = "https://api.mistral.ai/v1/chat/completions"
         headers = {
@@ -79,16 +74,12 @@ def get_ai_response(text, chat_history=None, callback=None):
             "Content-Type": "application/json"
         }
         
-        # Detect user's language
         user_lang = detect_language(text)
-        
-        # Determine target language
         if st.session_state.selected_language == "auto":
             target_lang = user_lang
         else:
             target_lang = st.session_state.selected_language
         
-        # Map language code to full name
         lang_map = {
             "en": "English", "gu": "Gujarati", "hi": "Hindi",
             "ar": "Arabic", "bn": "Bengali", "pt": "Portuguese",
@@ -114,7 +105,7 @@ def get_ai_response(text, chat_history=None, callback=None):
             "model": "mistral-small-latest",
             "messages": messages,
             "max_tokens": 150,
-            "temperature": 0.2  # Lower temperature for consistency
+            "temperature": 0.2
         }
         
         if callback:
@@ -130,28 +121,20 @@ def get_ai_response(text, chat_history=None, callback=None):
             if callback:
                 callback("done")
             return "I am unable to capture the response. Please ask again."
-    except Exception as e:
+    except:
         if callback:
             callback("done")
-        return f"I am unable to capture the response. Please ask again."
+        return "I am unable to capture the response. Please ask again."
 
 def text_to_speech(text):
-    """
-    Convert text to speech using gTTS with fallback for unsupported languages.
-    """
     try:
-        # Determine language
         if st.session_state.selected_language != "auto":
             lang = st.session_state.selected_language
         else:
             lang = detect_language(text)
         
-        # gTTS supported languages
         supported_langs = ["en", "gu", "hi", "ar", "bn", "es", "fr", "de", "ja", "pt"]
-        
         if lang not in supported_langs:
-            # Fallback to English for unsupported languages
-            st.warning(f"Language '{lang}' not fully supported. Using English TTS.")
             lang = "en"
         
         tts = gTTS(text=text, lang=lang, slow=False)
@@ -159,9 +142,7 @@ def text_to_speech(text):
         tts.write_to_fp(audio_buffer)
         audio_buffer.seek(0)
         return audio_buffer.read()
-    except Exception as e:
-        st.warning(f"TTS Error: {e}. Falling back to English.")
-        # Final fallback: English TTS
+    except:
         try:
             tts = gTTS(text=text, lang="en", slow=False)
             audio_buffer = io.BytesIO()
@@ -214,6 +195,10 @@ if "selected_language" not in st.session_state:
     st.session_state.selected_language = "auto"
 if "typing_status" not in st.session_state:
     st.session_state.typing_status = "idle"
+if "all_conversations" not in st.session_state:
+    st.session_state.all_conversations = []  # Store all conversations for history
+if "current_conversation_index" not in st.session_state:
+    st.session_state.current_conversation_index = -1
 
 # ============================================
 # 🔊 AUTOPLAY AUDIO
@@ -555,9 +540,10 @@ div[data-testid="stDownloadButton"] button:hover {
     box-shadow: 0 6px 20px rgba(52,211,153,0.12) !important;
 }
 
-/* ── SIDEBAR STYLES ── */
+/* ── SIDEBAR DARK STYLES ── */
 .css-1d391kg, .css-1d391kg p, .css-1d391kg div {
     color: #CBD5E1 !important;
+    background: #0d1117 !important;
 }
 .css-1d391kg .stSelectbox label {
     color: #94A3B8 !important;
@@ -567,6 +553,9 @@ div[data-testid="stDownloadButton"] button:hover {
     background: rgba(30,41,59,0.4) !important;
     border: 1px solid rgba(99,102,241,0.15) !important;
     border-radius: 10px !important;
+    color: #CBD5E1 !important;
+}
+.css-1d391kg .stMarkdown {
     color: #CBD5E1 !important;
 }
 
@@ -593,10 +582,7 @@ st.markdown("""
 # 💬 UNIFIED SCROLLABLE CHAT WINDOW
 # ============================================
 def build_chat_html(conversation, current_user, current_ai):
-    """Build all messages into one scrollable chat window."""
     all_entries = []
-
-    # Add history entries (oldest first)
     for entry in conversation:
         all_entries.append(entry)
 
@@ -670,14 +656,12 @@ if audio_input is not None:
     if st.session_state.last_processed_audio != audio_bytes:
         st.session_state.last_processed_audio = audio_bytes
 
-        # Placeholder for typing indicator
         typing_placeholder = st.empty()
 
         with st.spinner("✦ Processing your voice..."):
             user_text = speech_to_text(audio_bytes)
 
             if user_text:
-                # Callback to update typing status
                 def update_typing(status):
                     if status == "typing":
                         typing_placeholder.markdown("""
@@ -692,14 +676,9 @@ if audio_input is not None:
                         typing_placeholder.empty()
 
                 ai_response = get_ai_response(user_text, st.session_state.chat_messages, update_typing)
-
-                # Clear typing indicator
                 typing_placeholder.empty()
-
-                # Convert to speech
                 ai_audio = text_to_speech(ai_response)
 
-                # Update session state
                 st.session_state.chat_messages.append({"role": "user", "content": user_text})
                 st.session_state.chat_messages.append({"role": "assistant", "content": ai_response})
 
@@ -727,7 +706,7 @@ if audio_input is not None:
 # ============================================
 if st.session_state.conversation:
     st.markdown("<br>", unsafe_allow_html=True)
-    col1, col2 = st.columns([1, 1])
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         if st.button("🗑️ Clear Conversation", use_container_width=True):
             st.session_state.conversation = []
@@ -739,17 +718,55 @@ if st.session_state.conversation:
             save_history([])
             st.rerun()
     with col2:
-        history_text = export_history(st.session_state.conversation)
-        st.download_button(
-            label="📥 Export History",
-            data=history_text,
-            file_name=f"VoiceVerse_History_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-            mime="text/plain",
-            use_container_width=True
-        )
+        # New Conversation button - saves current conversation to history
+        if st.button("✨ New Conversation", use_container_width=True):
+            if st.session_state.conversation:
+                # Save current conversation to all_conversations
+                st.session_state.all_conversations.append({
+                    "timestamp": datetime.now().strftime("%I:%M %p, %d %b"),
+                    "conversation": st.session_state.conversation.copy(),
+                    "messages": st.session_state.chat_messages.copy()
+                })
+                # Clear current conversation
+                st.session_state.conversation = []
+                st.session_state.chat_messages = []
+                st.session_state.current_user_text = ""
+                st.session_state.current_ai_text = ""
+                st.session_state.last_processed_audio = None
+                st.session_state.pending_audio_bytes = None
+                save_history([])
+                st.rerun()
+    with col3:
+        # Export All Conversations
+        if st.session_state.all_conversations or st.session_state.conversation:
+            all_text = []
+            # Add current conversation
+            if st.session_state.conversation:
+                all_text.append("=== Current Conversation ===")
+                for entry in st.session_state.conversation:
+                    all_text.append(f"{entry.get('timestamp', '')} - You: {entry.get('user', '')}")
+                    all_text.append(f"{entry.get('timestamp', '')} - AI: {entry.get('ai', '')}")
+                    all_text.append("")
+            # Add saved conversations
+            if st.session_state.all_conversations:
+                for idx, conv in enumerate(st.session_state.all_conversations):
+                    all_text.append(f"\n=== Conversation {idx+1} ({conv.get('timestamp', '')}) ===")
+                    for entry in conv.get('conversation', []):
+                        all_text.append(f"{entry.get('timestamp', '')} - You: {entry.get('user', '')}")
+                        all_text.append(f"{entry.get('timestamp', '')} - AI: {entry.get('ai', '')}")
+                        all_text.append("")
+            
+            export_data = "\n".join(all_text)
+            st.download_button(
+                label="📥 Export All History",
+                data=export_data,
+                file_name=f"VoiceVerse_All_History_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
 
 # ============================================
-# 🎯 SIDEBAR – Language Selection
+# 🎯 SIDEBAR – Language Selection & Saved Conversations
 # ============================================
 with st.sidebar:
     st.markdown("### 🌐 Language Settings")
@@ -777,7 +794,14 @@ with st.sidebar:
     )
     if selected_lang != st.session_state.selected_language:
         st.session_state.selected_language = selected_lang
-        # Clear conversation when language changes
+        # Clear current conversation when language changes
+        if st.session_state.conversation:
+            # Save current conversation before clearing
+            st.session_state.all_conversations.append({
+                "timestamp": datetime.now().strftime("%I:%M %p, %d %b"),
+                "conversation": st.session_state.conversation.copy(),
+                "messages": st.session_state.chat_messages.copy()
+            })
         st.session_state.conversation = []
         st.session_state.chat_messages = []
         st.session_state.current_user_text = ""
@@ -790,50 +814,17 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 📊 Stats")
     st.caption(f"Total conversations: {len(st.session_state.conversation)}")
+    st.caption(f"Saved conversations: {len(st.session_state.all_conversations)}")
+    
+    st.markdown("---")
+    st.markdown("### 📜 Saved Conversations")
+    if st.session_state.all_conversations:
+        for idx, conv in enumerate(st.session_state.all_conversations):
+            st.caption(f"📁 {idx+1}. {conv.get('timestamp', '')}")
+    else:
+        st.caption("No saved conversations yet.")
     
     st.markdown("---")
     st.markdown("### ❤️ About")
     st.caption("VoiceVerse Pro – Conversational Voice Intelligence")
     st.caption("Powered by AssemblyAI · Mistral AI · gTTS")
-
-# ============================================
-# SIDEBAR TOGGLE BUTTON (fix for collapsed sidebar)
-# ============================================
-st.markdown("""
-<style>
-.sidebar-toggle {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 999;
-    background: rgba(108, 99, 255, 0.9);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    font-size: 1.4rem;
-    cursor: pointer;
-    box-shadow: 0 4px 20px rgba(108, 99, 255, 0.4);
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.sidebar-toggle:hover {
-    transform: scale(1.05);
-    background: rgba(108, 99, 255, 1);
-    box-shadow: 0 6px 28px rgba(108, 99, 255, 0.6);
-}
-</style>
-
-<button class="sidebar-toggle" onclick="
-    const sidebar = parent.document.querySelector('.stSidebar');
-    if (sidebar) {
-        sidebar.style.transform = 'translateX(0px)';
-        sidebar.style.display = 'block';
-    }
-">
-    ☰
-</button>
-""", unsafe_allow_html=True)

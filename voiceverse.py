@@ -738,26 +738,31 @@ if st.session_state.conversation:
             st.session_state.current_user_text = ""
             st.session_state.current_ai_text = ""
             st.session_state.last_processed_audio = None
-            st.session_state.pending_audio_bytes = None
+            st.session_state.pending_audio_bytes = None  # ← Stop audio
             save_history([])
             st.rerun()
+            
     with col2:
         if st.button("✨ New Conversation", use_container_width=True, type="primary"):
             if st.session_state.conversation:
+                # Save current conversation
                 st.session_state.all_conversations.append({
                     "timestamp": datetime.now().strftime("%I:%M %p, %d %b"),
                     "conversation": st.session_state.conversation.copy(),
                     "messages": st.session_state.chat_messages.copy()
                 })
                 save_saved_conversations(st.session_state.all_conversations)
+                
+                # Clear everything including audio
                 st.session_state.conversation = []
                 st.session_state.chat_messages = []
                 st.session_state.current_user_text = ""
                 st.session_state.current_ai_text = ""
                 st.session_state.last_processed_audio = None
-                st.session_state.pending_audio_bytes = None
+                st.session_state.pending_audio_bytes = None  # ← Stop audio
                 save_history([])
                 st.rerun()
+                
     with col3:
         if st.session_state.all_conversations or st.session_state.conversation:
             all_text = []
@@ -827,7 +832,7 @@ with st.sidebar:
         st.session_state.current_user_text = ""
         st.session_state.current_ai_text = ""
         st.session_state.last_processed_audio = None
-        st.session_state.pending_audio_bytes = None
+        st.session_state.pending_audio_bytes = None  # ← Stop audio
         save_history([])
         st.rerun()
     
